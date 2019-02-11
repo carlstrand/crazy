@@ -1,0 +1,37 @@
+---
+
+roundcube_plugins:
+  - password
+  - archive
+  - jqueryui
+  - markasjunk
+  - newmail_notifier
+  - autologon
+  - subscriptions_option
+  - emoticons
+  - new_user_identity
+  - managesieve
+  - contextmenu
+  - thunderbird_labels
+  - keyboard_shortcuts
+
+# Available plugins:
+# - dkimstatus
+# - hide_blockquote
+# - enigma
+# - zipdownload
+# - new_user_dialog
+# - additional_message_headers
+# - acl
+# - database_attachments
+# - debug_logger
+# - filesystem_attachments
+# - help
+# - hide_blockquote
+# - http_authentication
+# - show_additional_headers
+# - squirrelmail_usercopy
+# - userinfo
+# - vcard_attachments
+# - virtuser_file
+# - virtuser_query

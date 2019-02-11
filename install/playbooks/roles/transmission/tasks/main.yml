@@ -1,0 +1,135 @@
+---
+
+- name: Install the transmission package
+  tags: apt
+  apt:
+    update_cache: true
+    name: transmission-daemon
+    state: present
+
+# Web site configuration ======================================================
+
+- name: Create the web site
+  tags: config, nginx
+  notify:
+    - Check nginx config
+    - Restart nginx
+  template:
+    src: webui-site.tpl
+    dest: '/etc/nginx/sites-available/transmission.{{ network.domain }}.conf'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy nginx configuration
+  tags: nginx
+  notify:
+    - Check nginx config
+    - Restart nginx
+  file:
+    src: '/etc/nginx/sites-available/transmission.{{ network.domain }}.conf'
+    dest: '/etc/nginx/sites-enabled/transmission.{{ network.domain }}.conf'
+    state: link
+
+# nginx Fancyindex ============================================================
+- name: Install the nginx fancyindex package
+  tags: apt
+  apt:
+    name: libnginx-mod-http-fancyindex
+    state: present
+
+- name: Copy fancyindex theme
+  tags: fancyindex
+  copy:
+    src: 'download-themes'
+    dest: '/usr/share/transmission/web/'
+    owner: root
+    group: root
+
+# System configuration ========================================================
+- name: Tune the network system limits for transmission
+  tags: sysctl
+  sysctl:
+    name: '{{ sysctl.name }}'
+    value: '{{ sysctl.value }}'
+    state: present
+  with_items:
+    - name: net.core.rmem_max
+      value: 4194304
+    - name: net.core.wmem_max
+      value: 4194304
+  loop_control:
+    loop_var: sysctl
+
+# Daemon configuration ========================================================
+
+- name: Check if transmission is already running
+  register: transmission_status
+  shell: systemctl --quiet is-active transmission-daemon && echo Running || echo None
+
+- name: Stop transmission daemon
+  when: transmission_status == "Running"
+  service:
+    name: transmission-daemon
+    state: stopped
+
+- name: Copy the daemon configuration
+  tags: config
+  notify: Restart transmission daemon
+  template:
+    src: 'settings.json'
+    dest: '/etc/transmission-daemon/settings.json'
+    owner: debian-transmission
+    group: debian-transmission
+    mode: '0600'
+
+- name: Create the directories for downloads complete
+  notify: Restart transmission daemon
+  file:
+    path: '{{ transmission.download_dir }}'
+    state: directory
+    owner: debian-transmission
+    group: debian-transmission
+    mode: '0755'
+
+- name: Create the directories for downloads in progress
+  notify: Restart transmission daemon
+  when: transmission.incomplete_dir
+  file:
+    dest: '{{ transmission.incomplete_dir }}'
+    state: directory
+    owner: debian-transmission
+    group: debian-transmission
+    mode: '0700'
+
+# AppArmor configuration ======================================================
+
+- name: Install nginx AppArmor profile
+  when: security.app_armor
+  tags: security, apparmor
+  register: aa_config
+  notify:
+    - Check nginx config
+    - Restart nginx
+  template:
+    src: 'apparmor.d/{{ file }}'
+    dest: '/etc/apparmor.d/{{ file }}'
+  with_items:
+    - local/transmission-web
+    - usr.bin.transmission-daemon
+  loop_control:
+    loop_var: file
+
+- name: Add transmission AppAromor specific configuration
+  when: security.app_armor
+  tags: security, apparmor
+  lineinfile:
+    path: /etc/apparmor.d/usr.sbin.nginx
+    line: '  #include <local/transmission-web>'
+    insertbefore: '# End of local includes for homebox'
+
+- name: Activate AppArmor profiles
+  when: security.app_armor and aa_config.changed
+  tags: security, apparmor
+  command: 'aa-enforce usr.sbin.nginx'
+  notify: Restart AppArmor service

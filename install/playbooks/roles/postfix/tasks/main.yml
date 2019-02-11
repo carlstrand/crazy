@@ -1,0 +1,205 @@
+---
+
+# Install postfix packages
+- name: Install postfix packages
+  tags: postfix
+  notify: Restart postfix
+  apt:
+    name: "{{ pkg }}"
+    state: present
+  with_items:
+    - postfix
+    - postfix-cdb
+    - postfix-pcre
+    - postfix-ldap
+    - sasl2-bin
+    - postfix-policyd-spf-python
+  loop_control:
+    loop_var: pkg
+
+################################################################################
+# At this point, the certificates should have been created already #############
+# in order to have SSL and TLS encryption activated.                           #
+- name: Allow postfix to access the certificate directories
+  tags: postfix,ssl
+  notify: Restart postfix
+  acl:
+    path: '{{ path }}'
+    entity: postfix
+    etype: user
+    permissions: rx
+    state: present
+  with_items:
+    - /etc/letsencrypt
+    - /etc/letsencrypt/archive
+    - /etc/letsencrypt/live
+  loop_control:
+    loop_var: path
+
+#                                                                              #
+# End of TLS / SSL Configuration ###############################################
+
+- name: Ensure the imap server FQDN resolves to localhost
+  tags: postfix
+  lineinfile:
+    path: /etc/hosts
+    line: '127.0.0.1    smtp.{{ network.domain }}'
+
+- name: Install postfix packages for local administration
+  tags: postfix
+  notify: Restart postfix
+  apt:
+    name: "{{ pkg }}"
+    state: present
+  with_items:
+    - pfqueue
+    - bsd-mailx
+  loop_control:
+    loop_var: pkg
+
+# The typical base64 overhead is 33%, and the value in the configuration file is in Mb
+# So the value is max_attachment_size * 1.33 * 1024 * 1024, i.e. max_attachment_size * 1394606
+# Adding 1Kb for the message text, because we are generous (sic)
+- name: Compute max message size from max attachment size
+  tags: config
+  set_fact:
+    message_size_limit: '{{ 1024 + mail.max_attachment_size * 1394606 | int }}'
+
+- name: Copy configuration template
+  tags: config
+  notify: Restart postfix
+  template:
+    src: "{{ file }}"
+    dest: "/etc/postfix/{{ file }}"
+  with_items:
+    - master.cf
+    - main.cf
+    - ldap-aliases.cf
+    - senders-bcc.cf
+  loop_control:
+    loop_var: file
+
+- name: Refresh the senders bcc map
+  tags: postfix
+  notify: Restart postfix
+  command: "postmap /etc/postfix/{{ file }}"
+  with_items:
+    - senders-bcc.cf
+  loop_control:
+    loop_var: file
+
+- name: Configure the firewall for default access
+  tags: postfix,security
+  ufw:
+    rule: allow
+    proto: tcp
+    src: any
+    port: '{{ rule.port }}'
+    comment: '{{ rule.comment }}'
+  with_items:
+    - comment: Allow basic SMTP
+      port: 25
+    - comment: Allow encrypted SMTP
+      port: 465
+    - comment: Allow submission
+      port: '{{ mail.postfix.submission.port }}'
+  loop_control:
+    loop_var: rule
+
+# AppArmor configuration ======================================================
+- name: Set postfix AppAromor profiles list
+  when: security.app_armor
+  tags: security, apparmor
+  set_fact:
+    postfix_apparmor_profiles:
+    - usr.lib.postfix.anvil
+    - usr.lib.postfix.bounce
+    - usr.lib.postfix.cleanup
+    - usr.lib.postfix.discard
+    - usr.lib.postfix.error
+    - usr.lib.postfix.flush
+    - usr.lib.postfix.lmtp
+    - usr.lib.postfix.local
+    - usr.lib.postfix.master
+    - usr.lib.postfix.nqmgr
+    - usr.lib.postfix.oqmgr
+    - usr.lib.postfix.pickup
+    - usr.lib.postfix.pipe
+    - usr.lib.postfix.proxymap
+    - usr.lib.postfix.qmgr
+    - usr.lib.postfix.qmqpd
+    - usr.lib.postfix.scache
+    - usr.lib.postfix.showq
+    - usr.lib.postfix.smtp
+    - usr.lib.postfix.smtpd
+    - usr.lib.postfix.spawn
+    - usr.lib.postfix.tlsmgr
+    - usr.lib.postfix.trivial-rewrite
+    - usr.lib.postfix.verify
+    - usr.lib.postfix.virtual
+    - usr.sbin.sendmail
+    - usr.sbin.postdrop
+    - usr.sbin.postqueue
+
+- name: Install some postfix AppArmor profile
+  when: security.app_armor
+  tags: security, apparmor
+  notify: Restart postfix
+  register: aa_templates
+  template:
+    src: 'apparmor.d/{{ aa_config }}'
+    dest: '/etc/apparmor.d/{{ aa_config }}'
+  with_items:
+    - '{{ postfix_apparmor_profiles }}'
+  loop_control:
+    loop_var: aa_config
+
+- name: Activate AppArmor profiles
+  when: security.app_armor and aa_templates.changed
+  tags: security, apparmor
+  notify: Restart AppArmor service
+  command: 'aa-enforce {{ aa_config }}'
+  with_items:
+    - '{{ postfix_apparmor_profiles }}'
+  loop_control:
+    loop_var: aa_config
+
+# See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=858587
+- name: Fix a bug in fail2ban configuration
+  tags: security,fail2ban
+  notify: Restart fail2ban
+  replace:
+    path: /etc/fail2ban/jail.conf
+    regexp: 'imap3,'
+    replace: ''
+
+# Create an empty mail.warn configuration, to let fail2ban start
+- name: Create an empty mail.warn
+  tags: security,fail2ban
+  file:
+    path: /var/log/mail.warn
+    state: touch
+
+- name: Activate fail2ban on postfix
+  tags: security,fail2ban
+  notify: Restart fail2ban
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    option: enabled
+    section: '{{ section }}'
+    value: true
+    create: no
+  with_items:
+    - postfix
+    - postfix-sasl
+    - postfix-rbl
+  loop_control:
+    loop_var: section
+
+# Create entries for the DNS server ===========================================
+- name: Generate DNS records for bind
+  tags: bind
+  when: bind.install
+  template:
+    src: 30-postfix.bind
+    dest: /etc/homebox/dns-entries.d/30-postfix.bind

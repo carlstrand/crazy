@@ -1,0 +1,22 @@
+---
+
+# Install and configure the borgbackup package
+
+# The ssh-keygen role generate an SSH key to use with rsync/ssh
+# remote repositories.
+# Copy the public key on the remote backup location.
+
+- hosts: homebox
+  vars_files:
+    - '{{ playbook_dir }}/../../config/system.yml'
+    - '{{ playbook_dir }}/../../config/defaults.yml'
+  vars:
+    key:
+      path: /root/.ssh/
+      user: root
+      comment: SSH key for backup
+      name: backup
+      passphrase: ~
+  roles:
+    - ssh-keygen
+    - borg-backup

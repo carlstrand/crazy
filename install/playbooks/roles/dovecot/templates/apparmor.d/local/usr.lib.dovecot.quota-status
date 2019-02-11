@@ -1,0 +1,18 @@
+  # Need this to work
+  capability dac_override,
+  capability dac_read_search,
+
+  # Access maildirs
+  /home/users/*/mails/maildir/ rwk,
+  /home/users/*/mails/maildir/maildirsize* rwk,
+  /home/users/*/mails/maildir/** r,
+
+  # Index quotas
+  /home/users/*/mails/maildir/dovecot* rwkl,
+  /home/users/*/mails/maildir/.vsize.* rwkl,
+  /home/users/*/mails/indexes/dovecot* rwkl,
+
+  # Get users and groups list
+  /etc/passwd r,
+  /etc/group r,
+  /etc/nsswitch.conf r,

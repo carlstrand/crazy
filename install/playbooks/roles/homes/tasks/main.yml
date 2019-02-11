@@ -1,0 +1,93 @@
+---
+
+- name: Create the group home folders if necessary
+  tags: accounts
+  file:
+    path: /home/users
+    owner: root
+    group: users
+    state: directory
+
+- name: Create the user account maildir folders
+  tags: accounts
+  file:
+    path: '/home/users/{{ user.uid }}/mails/maildir'
+    owner: '{{ user.uid }}'
+    group: users
+    state: directory
+    mode: 0700
+    recurse: false
+  with_items:
+    - '{{ users }}'
+    - uid: postmaster
+  loop_control:
+    loop_var: user
+
+- name: Create the user account mail folders
+  tags: accounts
+  file:
+    path: '/home/users/{{ user.uid }}/mails/sieve/logs'
+    owner: '{{ user.uid }}'
+    group: users
+    state: directory
+    mode: 0700
+    recurse: true
+  with_items:
+    - '{{ users }}'
+    - uid: postmaster
+  loop_control:
+    loop_var: user
+
+- name: Create the user account mail indexes folders
+  tags: accounts
+  file:
+    path: '/home/users/{{ user.uid }}/mails/indexes'
+    owner: '{{ user.uid }}'
+    group: users
+    state: directory
+    mode: 0700
+    recurse: true
+  with_items:
+    - '{{ users }}'
+    - uid: postmaster
+  loop_control:
+    loop_var: user
+
+- name: Create the user account mail import folders
+  tags: accounts
+  file:
+    path: '/home/users/{{ user.uid }}/mails/import'
+    owner: '{{ user.uid }}'
+    group: users
+    state: directory
+    mode: 0700
+    recurse: true
+  with_items:
+    - '{{ users }}'
+    - uid: postmaster
+  loop_control:
+    loop_var: user
+
+- name: Also add these folders into the skeleton, for new users
+  tags: accounts
+  file:
+    path: '{{ dir }}'
+    owner: root
+    group: root
+    state: directory
+    mode: 0700
+    recurse: true
+  with_items:
+    - /etc/skel/mails/maildir
+    - /etc/skel/mails/sieve
+    - /etc/skel/mails/sieve/logs
+    - /etc/skel/mails/indexes
+    - /etc/skel/mails/import
+  loop_control:
+    loop_var: dir
+
+- name: Create home directory for users on first login
+  tags: ldap
+  lineinfile:
+    dest: /etc/pam.d/common-account
+    line: 'session    required    pam_mkhomedir.so skel=/etc/skel/ umask=0022'

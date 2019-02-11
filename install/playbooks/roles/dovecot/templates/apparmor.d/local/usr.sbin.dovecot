@@ -1,0 +1,11 @@
+
+  /etc/letsencrypt/archive/imap.{{ network.domain }}/* r,
+  /etc/letsencrypt/archive/pop3.{{ network.domain }}/* r,
+
+  /lib/*/libc-*.so mr,
+
+  /usr/lib/dovecot/* Px,
+  /usr/lib/dovecot/modules/*.so mr,
+
+  /home/users/*/mails/maildir/maildirsize ra,
+  /home/users/*/mails/maildir/maildirsize rw,

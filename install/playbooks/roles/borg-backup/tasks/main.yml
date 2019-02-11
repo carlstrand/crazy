@@ -1,0 +1,63 @@
+---
+
+- name: Install required packages package
+  tags: backup
+  apt:
+    name: '{{ pkg }}'
+    state: latest
+  with_items:
+    - borgbackup
+    - python3-psutil
+  loop_control:
+    loop_var: pkg
+
+- name: Create the backup mount point
+  tags: backup
+  file:
+    path: /mnt/backup
+    state: directory
+
+- name: Create a directory to store all the ssh configuration segments
+  tags: backup
+  file:
+    path: /root/.ssh/config.d/
+    state: directory
+
+- name: Configure each protocol
+  include_tasks: install-protocol.yml
+  with_items:
+    - '{{ backup.locations }}'
+  loop_control:
+    loop_var: location
+
+- name: Add the cron entries
+  tags: config
+  template:
+    src: cron-script.sh
+    dest: '/etc/cron.{{ location.frequency | default("daily") }}/backup-{{ location.name }}'
+    mode: '0700'
+  with_items:
+    - '{{ backup.locations }}'
+  loop_control:
+    loop_var: location
+
+- name: Create a random passphrase for encrypted backup
+  tags: encryption
+  set_fact:
+    backup_key: '{{ lookup("password", "{{ encryption.backupKeyParams }}") }}'
+
+- name: Save the passphrase
+  tags: encryption
+  template:
+    src: backup-key
+    dest: /etc/homebox/backup-key
+    owner: root
+    group: root
+    mode: '0400'
+
+- name: Copy the backup script
+  tags: scripts
+  copy:
+    src: backup.py
+    dest: '/usr/local/sbin/backup'
+    mode: '0700'

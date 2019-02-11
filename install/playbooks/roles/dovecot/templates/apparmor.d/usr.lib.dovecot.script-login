@@ -1,0 +1,24 @@
+# Last Modified: Sat Mar 31 16:05:14 2018
+#include <tunables/global>
+
+/usr/lib/dovecot/script-login {
+
+  #include <abstractions/base>
+  #include <abstractions/dovecot-common>
+
+  # Capabilities
+  capability setuid,
+  capability setgid,
+
+  /lib/x86_64-linux-gnu/ld-*.so mr,
+  /usr/lib/dovecot/script-login mr,
+
+  # The login script is running unconfined,
+  # but as the Dovecot user
+  /usr/local/sbin/dovecot-postlogin r,
+  /usr/local/sbin/dovecot-postlogin Ux,
+
+  # Access configuration files
+  /etc/passwd r,
+  /etc/nsswitch.conf r,
+}

@@ -1,0 +1,31 @@
+  # Mails directory
+  /home/users/*/mails/maildir/ r,
+  /home/users/*/mails/maildir/dovecot.index rw,
+  /home/users/*/mails/maildir/dovecot.index.log rw,
+  /home/users/*/mails/maildir/maildirsize rw,
+  /home/users/*/mails/sieve/ rw,
+  /home/users/*/mails/sieve/** rw,
+
+  /usr/bin/doveconf rix,
+  /usr/lib/dovecot/managesieve mrix,
+  /usr/share/dovecot/protocols.d/ r,
+  /usr/share/dovecot/protocols.d/imapd.protocol r,
+  /usr/share/dovecot/protocols.d/lmtpd.protocol r,
+  /usr/share/dovecot/protocols.d/managesieved.protocol r,
+  /usr/share/dovecot/protocols.d/pop3d.protocol r,
+
+  /etc/nsswitch.conf r,
+  /etc/group r,
+  /etc/passwd r,
+
+  # When storing indexes outside maildir
+  /home/users/*/mails/indexes/**/dovecot.index.log rak,
+  /home/users/*/mails/indexes/**/dovecot.index.log rwk,
+  /home/users/*/mails/indexes/ rak,
+  /home/users/*/mails/indexes/ rwkl,
+  /home/users/*/mails/indexes/** rak,
+  /home/users/*/mails/indexes/** rwkl,
+  /home/users/*/mails/maildir/dovecot-uidlist rw,
+
+  # Let managesieve to lock indexes
+  /home/users/*/mails/maildir/dovecot.* rwkl,

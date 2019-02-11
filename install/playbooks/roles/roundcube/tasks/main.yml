@@ -1,0 +1,200 @@
+---
+
+- name: Get the passwords generated in the accounts tasks
+  tags: roundcube
+  set_fact:
+    roPasswdParams: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/readonly.pwd length=16 chars=ascii_letters,digits"
+
+- name: Install roundcube webmail
+  tags: roundcube
+  apt:
+    name: "{{ pkg }}"
+    state: present
+  with_items:
+    - postgresql
+    - roundcube-pgsql
+    - roundcube-core
+    - roundcube-plugins
+    - roundcube-plugins-extra
+    - roundcube
+    - imapproxy
+    - php-fpm
+    - php-ldap
+    - php-net-sieve
+    - php-net-ldap2
+    - php-net-ldap3       # For LDAP address book
+    - php7.0-pspell       # For spell checking
+    - aspell
+    - php7.0-zip          # For multiple attachments download
+  loop_control:
+    loop_var: pkg
+
+- name: Compute max upload size from max attachment size
+  tags: roundcube
+  set_fact:
+    upload_max_size: '{{ mail.max_attachment_size }}'
+    post_max_size: '{{ 1 + mail.max_attachment_size | int }}'
+
+- name: Configure the IMAP proxy
+  tags: roundcube
+  notify: Restart IMAP proxy
+  template:
+    src: imapproxy.conf
+    dest: /etc/imapproxy.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy roundcube configuration
+  tags: roundcube
+  template:
+    src: webmail-site.tpl
+    dest: '/etc/nginx/sites-available/webmail.{{ network.domain }}.conf'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Activate roundcube web site
+  tags: roundcube
+  notify: Restart nginx
+  file:
+    src: '/etc/nginx/sites-available/webmail.{{ network.domain }}.conf'
+    dest: '/etc/nginx/sites-enabled/webmail.{{ network.domain }}.conf'
+    state: link
+
+- name: Create a session key for roundcube
+  tags: roundcube
+  notify: Restart nginx
+  shell: makepasswd --chars=24
+  register: makepasswd
+
+- name: Create the directory for dovecot_impersonate plugin
+  when: mail.impersonate.active
+  tags: roundcube
+  file:
+    path: /etc/roundcube/plugins/dovecot_impersonate
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+
+- name: Create the dovecot impersonate configuration
+  tags: impersonate
+  when: mail.impersonate.active
+  template:
+    src: plugins/dovecot_impersonate.php
+    dest: /etc/roundcube/plugins/dovecot_impersonate/config.inc.php
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Make sure the plugin reads the correct configuration file
+  tags: impersonate
+  file:
+    src: /etc/roundcube/plugins/dovecot_impersonate/config.inc.php
+    dest: /usr/share/roundcube/plugins/dovecot-impersonate/config.inc.php
+    state: link
+    force: yes
+
+- name: Copy roundcube configuration
+  tags: roundcube
+  notify: Restart nginx
+  vars:
+    plugins: ' [''{{ roundcube.plugins | join(", "|quote) }}'' ]'
+  template:
+    src: config.inc.php
+    dest: /etc/roundcube/config.inc.php
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Make sure there is a directory for each of these plugins
+  tags: roundcube
+  file:
+    path: '/etc/roundcube/plugins/{{ file }}'
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  with_items:
+    - password
+    - new_user_identity
+    - managesieve
+    - thunderbird_labels
+  loop_control:
+    loop_var: file
+
+- name: Copy roundcube plugins configuration
+  tags: roundcube
+  notify: Restart nginx
+  template:
+    src: 'plugins/{{ file }}.php'
+    dest: '/etc/roundcube/plugins/{{ file }}/config.inc.php'
+    owner: root
+    group: www-data
+    mode: 0640
+  with_items:
+    - password
+    - new_user_identity
+    - managesieve
+    - thunderbird_labels
+  loop_control:
+    loop_var: file
+
+- name: Replace the upload maximum size in
+  tags: roundcube
+  notify: Restart php-fpm
+  replace:
+    path: /etc/php/7.0/fpm/php.ini
+    regexp: '{{ line.regexp }}'
+    replace: '{{ line.replace }}'
+  with_items:
+    - regexp: '^upload_max_filesize = .*'
+      replace: 'upload_max_filesize = {{ upload_max_size }}M'
+    - regexp: '^post_max_size = .*'
+      replace: 'post_max_size = {{ post_max_size }}M'
+  loop_control:
+    loop_var: line
+
+# There is bugs in the name of the symbolic links on Debian
+# https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=roundcube-plugins-extra;dist=unstable
+- name: Make sure the plugins are correctly named
+  command: >-
+    mv '/var/lib/roundcube/plugins/{{ folder.old }}' '/var/lib/roundcube/plugins/{{ folder.new }}'
+  args:
+    creates: '/var/lib/roundcube/plugins/{{ folder.new }}'
+  with_items:
+    - old: keyboard-shortcuts
+      new: keyboard_shortcuts
+    - old: thunderbird-labels
+      new: thunderbird_labels
+    - old: dovecot-impersonate
+      new: dovecot_impersonate
+  loop_control:
+    loop_var: folder
+
+
+# AppArmor configuration ======================================================
+
+- name: Install nginx AppArmor profile
+  when: security.app_armor
+  notify:
+    - Activate AppArmor profile
+    - Restart AppArmor service
+    - Restart nginx
+  tags: roundcube, security, apparmor
+  template:
+    src: apparmor.d/local/roundcube
+    dest: /etc/apparmor.d/local/roundcube
+
+- name: Add roundcube AppArmor specific configuration
+  when: security.app_armor
+  notify:
+    - Activate AppArmor profile
+    - Restart AppArmor service
+    - Restart nginx
+  tags: roundcube, security, apparmor
+  lineinfile:
+    path: /etc/apparmor.d/usr.sbin.nginx
+    line: '  #include <local/roundcube>'
+    insertbefore: '# End of local includes for homebox'

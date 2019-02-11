@@ -1,0 +1,19 @@
+---
+
+###############################################################################
+defaults:
+  # Defaults packages to install
+  packages:
+    - unattended-upgrades
+    - ufw
+    - fail2ban
+    - rblcheck
+    - locales
+
+###############################################################################
+# Dictionaries to install in the system
+dictionaries:
+  - name: Swedish
+    id: sv_SE
+  - name: English
+    id: en

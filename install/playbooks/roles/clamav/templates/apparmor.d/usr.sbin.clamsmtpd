@@ -1,0 +1,21 @@
+#include <tunables/global>
+
+/usr/sbin/clamsmtpd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  # Executables
+  /lib/x86_64-linux-gnu/ld-*.so mr,
+  /usr/sbin/clamsmtpd mrix,
+  capability setgid,
+  capability setuid,
+
+  # Read the configuration file
+  /etc/clamsmtpd.conf r,
+
+  # pid and log files
+  /run/clamsmtp/clamsmtpd.pid w,
+
+  # The log folder, and the quarantine
+  /var/spool/clamsmtp/* rwlk,
+}

@@ -1,0 +1,68 @@
+---
+
+- name: Create the autoconfiguration directories
+  file:
+    path: /var/www/autodiscover/autodiscover/
+    state: directory
+
+- name: Copy XML template
+  template:
+    src: autodiscover.xml
+    dest: /var/www/autodiscover/autodiscover/autodiscover.xml
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Create the autodiscover site
+  notify: Restart nginx
+  template:
+    src: autodiscover.conf
+    dest: '/etc/nginx/sites-available/autodiscover.{{ network.domain }}.conf'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Ensure autodiscover resolves to localhost for the reverse proxy
+  lineinfile:
+    path: /etc/hosts
+    line: '127.0.0.1    autodiscover.{{ network.domain }}'
+
+- name: Enable nginx site
+  file:
+    src: '/etc/nginx/sites-available/autodiscover.{{ network.domain }}.conf'
+    dest: '/etc/nginx/sites-enabled/autodiscover.{{ network.domain }}.conf'
+    state: link
+
+# AppArmor configuration ======================================================
+
+- name: Install nginx AppArmor profile
+  when: security.app_armor
+  tags: security, apparmor
+  notify:
+    - Activate AppArmor profile
+    - Restart AppArmor service
+    - Restart nginx
+  template:
+    src: 'apparmor.d/local/autodiscover'
+    dest: '/etc/apparmor.d/local/nginx-autodiscover'
+
+- name: Add autodiscover AppArmor specific configuration
+  when: security.app_armor
+  tags: security, apparmor
+  register: aa_config
+  notify:
+    - Activate AppArmor profile
+    - Restart AppArmor service
+    - Restart nginx
+  lineinfile:
+    path: /etc/apparmor.d/usr.sbin.nginx
+    line: '  #include <local/nginx-autodiscover>'
+    insertbefore: '# End of local includes for homebox'
+
+# Create entries for the DNS server ===========================================
+- name: Generate DNS records for bind
+  tags: bind
+  when: bind.install
+  template:
+    src: 70-autodiscover.bind
+    dest: /etc/homebox/dns-entries.d/70-autodiscover.bind

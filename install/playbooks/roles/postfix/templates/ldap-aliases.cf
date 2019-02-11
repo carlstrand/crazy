@@ -1,0 +1,12 @@
+# Basic LDAP settings for postfix
+server_host = ldap://{{ ldap.hostname }}/
+start_tls = yes
+
+search_base = {{ ldap.organization.base }}
+search_scope = sub
+
+query_filter = (|(mail=%s)(intlMailAddr=%s))
+result_attribute = mail
+
+# Force support for UTF8
+version = 3

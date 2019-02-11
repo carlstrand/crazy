@@ -1,0 +1,22 @@
+  # Local docecot LMTP configuration
+  /home/users/*/mails/maildir/ rwkl,
+  /home/users/*/mails/maildir/** rwkl,
+  /home/users/*/mails/maildir/** ra,
+
+  # User sieve scripts
+  /home/users/*/mails/sieve/** rwkl,
+  /home/users/*/.dovecot.lda-dupes* rwk,
+
+  # Allow the LMTP server to send emails through sendmail
+  /usr/sbin/sendmail rPx,
+
+  # Global sieve scripts
+  /etc/dovecot/sieve/** rwk,
+
+  # When storing indexes outside maildir
+  /home/users/*/mails/indexes/**/dovecot.index.log rak,
+  /home/users/*/mails/indexes/**/dovecot.index.log rwk,
+  /home/users/*/mails/indexes/ rak,
+  /home/users/*/mails/indexes/ rwkl,
+  /home/users/*/mails/indexes/** rak,
+  /home/users/*/mails/indexes/** rwkl,

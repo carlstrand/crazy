@@ -1,0 +1,93 @@
+---
+
+- name: Create a directory for the rspamd passwords
+  tags: rspamd
+  delegate_to: localhost
+  file:
+    path: '{{ playbook_dir }}/../../backup/{{ network.domain }}/rspamd/'
+    state: directory
+
+- name: Add rspamd GPG key
+  tags: rspamd
+  apt_key:
+    url: https://rspamd.com/apt-stable/gpg.key
+    state: present
+
+- name: Add rspamd repository
+  tags: rspamd
+  apt_repository:
+    repo: deb http://rspamd.com/apt-stable/ stretch main
+    state: present
+    filename: 'rspamd'
+
+- name: Install rspamd packages
+  tags: rspamd
+  apt:
+    name: "{{ pkg }}"
+    state: present
+  with_items:
+    - redis-server
+    - rspamd
+  loop_control:
+    loop_var: pkg
+
+- name: Set facts for rspamd password generation
+  tags: rspamd
+  set_fact:
+    password_path: "{{ playbook_dir }}/../../backup/{{ network.domain }}/rspamd/admin.pwd"
+    password_params: "length=16 chars=ascii_letters,digits"
+
+- name: Generate a random password for rspamd
+  tags: rspamd
+  set_fact:
+    rspamd_password: '{{ lookup("password", "{{ password_path }} {{ password_params }}") }}'
+
+- name: Set password for the rspamd account
+  tags: rspamd
+  register: rspamd_password_fact
+  command: 'rspamadm pw -p "{{ rspamd_password }}"'
+
+- name: display password
+  tags: rspamd
+  set_fact:
+    rspamd_password: rspamd_password_fact.stdout
+
+- name: Create local configuration files
+  tags: rspamd
+  notify: Restart rspamd
+  template:
+    src: '{{ file }}'
+    dest: '/etc/rspamd/local.d/{{ file }}'
+  with_items:
+    - classifier-bayes.conf
+    - worker-controller.inc
+    - worker-normal.inc
+    - worker-proxy.inc
+    - milter_headers.conf
+    - replies.conf
+    - surbl.conf
+    - url_reputation.conf
+    - url_tags.conf
+    - phishing.conf
+    - redis.conf
+    - logging.conf
+  loop_control:
+    loop_var: file
+
+- name: Install rspamd AppArmor profile
+  when: security.app_armor
+  tags: rspamd, security, apparmor
+  notify: Restart AppArmor service
+  template:
+    src: apparmor.d/usr.bin.rspamd
+    dest: /etc/apparmor.d/usr.bin.rspamd
+
+- name: Activate AppArmor profiles
+  when: security.app_armor
+  tags: rspamd, security, apparmor
+  notify: Restart AppArmor service
+  command: 'aa-enforce rspamd'
+
+- name: Include DMARC reporting if activated
+  when: dmarc.send_reports.active
+  include_tasks: roles/rspamd/tasks/dmarc-reporting.yml
