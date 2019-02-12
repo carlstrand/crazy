@@ -1,5 +1,4 @@
 ---
-
 - name: Create a directory for certificates backup if it does not exists
   tags: cert
   delegate_to: localhost
@@ -28,39 +27,39 @@
   when: certificate.type == '@'
   tags: cert, facts
   set_fact:
-    certificate_fqdn: "{{ network.domain }}"
-    site_root: "/var/www/default"
-    redirect_to_https: "{{ redirect | default(false) }}"
+    certificate_fqdn: '{{ network.domain }}'
+    site_root: '/var/www/default'
+    redirect_to_https: '{{ redirect | default(false) }}'
 
 - name: Create the certificate fqdn with the subdomain
   when: certificate.type != '@'
   tags: cert, facts
   set_fact:
-    certificate_fqdn: "{{ certificate.type }}.{{ network.domain }}"
-    site_root: "/var/www/{{ certificate.type }}"
-    redirect_to_https: "{{ redirect | default(false) }}"
+    certificate_fqdn: '{{ certificate.type }}.{{ network.domain }}'
+    site_root: '/var/www/{{ certificate.type }}'
+    redirect_to_https: '{{ redirect | default(false) }}'
 
 - name: Check if the certificate has been copied from a previous backup
   tags: cert
   register: cert_stat
   stat:
-    path: "/etc/letsencrypt/live/{{ certificate_fqdn }}/cert.pem"
+    path: '/etc/letsencrypt/live/{{ certificate_fqdn }}/cert.pem'
 
 - name: Create a directory for the site if it does not exists
   tags: cert
   file:
-    path: "{{ site_root }}/.well-known/acme-challenge/"
+    path: '{{ site_root }}/.well-known/acme-challenge/'
     state: directory
 
 - name: Create a simple nginx template site (if not exists)
   template:
     src: nginx-cert.conf
-    dest: "/etc/nginx/sites-available/{{ certificate_fqdn }}-cert.conf"
+    dest: '/etc/nginx/sites-available/{{ certificate_fqdn }}-cert.conf'
 
 - name: Make sure the site is enabled
   file:
-    src: "/etc/nginx/sites-available/{{ certificate_fqdn }}-cert.conf"
-    dest: "/etc/nginx/sites-enabled/{{ certificate_fqdn }}-cert.conf"
+    src: '/etc/nginx/sites-available/{{ certificate_fqdn }}-cert.conf'
+    dest: '/etc/nginx/sites-enabled/{{ certificate_fqdn }}-cert.conf'
     state: link
 
 # AppArmor configuration ======================================================
@@ -70,7 +69,7 @@
   tags: security, apparmor
   template:
     src: apparmor-cert.conf
-    dest: "/etc/apparmor.d/local/nginx-{{ certificate_fqdn }}"
+    dest: '/etc/apparmor.d/local/nginx-{{ certificate_fqdn }}'
 
 - name: Add website AppArmor specific configuration
   when: security.app_armor
@@ -128,14 +127,13 @@
   command: >-
     /usr/bin/certbot certonly
     --non-interactive
-    --test-cert
     --webroot
     --webroot-path "{{ site_root }}"
     --domain "{{ certificate_fqdn }}"
     --email "admin@{{ network.domain }}"
     --agree-tos
   args:
-    creates: "/etc/letsencrypt/live/{{ certificate_fqdn }}/cert.pem"
+    creates: '/etc/letsencrypt/live/{{ certificate_fqdn }}/cert.pem'
 
 - name: Remove the firewall rule if it has been added
   tags: security
