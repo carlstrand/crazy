@@ -31,42 +31,36 @@
   when: slapd_stats.stat.exists == False
   debconf:
     name: slapd
-    question: '{{ conf.question }}'
-    value: '{{ conf.value }}'
-    vtype: '{{ conf.type }}'
-  with_items:
-    - question: slapd/password1
-      type: password
-      value: '{{ lookup("password", ldap.adminPasswdParams) }}'
-    - question: slapd/password2
-      type: password
-      value: '{{ lookup("password", ldap.adminPasswdParams) }}'
-    - question: slapd/purge_database
-      value: false
-      type: boolean
-    - question: slapd/invalid_config
-      value: false
-      type: boolean
-    - question: shared/organization
-      value: '{{ ldap.organization.domain }}'
-      type: string
-    - question: slapd/domain
-      value: '{{ ldap.organization.domain }}'
-      type: string
-    - question: slapd/backend
-      value: 'MDB'
-      type: select
-    - question: slapd/move_old_database
-      value: true
-      type: boolean
-    - question: slapd/unsafe_selfwrite_acl
-      value: false
-      type: boolean
-    - question: slapd/password_mismatch
-      value: false
-      type: boolean
-  loop_control:
-    loop_var: conf
+    question: '{{ item.question }}'
+    value: '{{ item.value }}'
+    vtype: '{{ item.type }}'
+  loop:
+    - {
+        question: slapd/password1,
+        type: password,
+        value: '{{ lookup("password", ldap.adminPasswdParams) }}',
+      }
+    - {
+        question: slapd/password2,
+        type: password,
+        value: '{{ lookup("password", ldap.adminPasswdParams) }}',
+      }
+    - { question: slapd/purge_database, value: false, type: boolean }
+    - { question: slapd/invalid_config, value: false, type: boolean }
+    - {
+        question: shared/organization,
+        value: '{{ ldap.organization.domain }}',
+        type: string,
+      }
+    - {
+        question: slapd/domain,
+        value: '{{ ldap.organization.domain }}',
+        type: string,
+      }
+    - { question: slapd/backend, value: 'MDB', type: select }
+    - { question: slapd/move_old_database, value: true, type: boolean }
+    - { question: slapd/unsafe_selfwrite_acl, value: false, type: boolean }
+    - { question: slapd/password_mismatch, value: false, type: boolean }
 
 # Install LDAP server
 - name: Install the required packages
