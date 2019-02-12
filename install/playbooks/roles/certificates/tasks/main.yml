@@ -119,7 +119,7 @@
     proto: tcp
     rule: limit
     src: any
-    port: 80
+    port: '80'
     comment: Allow LetsEncrypt temporarily
 
 # The certbot package need to be installed
@@ -144,7 +144,7 @@
     proto: tcp
     rule: limit
     src: any
-    port: 80
+    port: '80'
     delete: yes
     comment: Allow LetsEncrypt temporarily
 
