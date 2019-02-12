@@ -18,4 +18,4 @@
   when: packages_cache.changed
   tags: apt
   apt:
-    upgrade: yes
+    upgrade: "yes"

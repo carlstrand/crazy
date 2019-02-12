@@ -423,7 +423,7 @@
     path: /etc/fail2ban/jail.conf
     option: enabled
     section: '{{ section }}'
-    value: true
+    value: "true"
     create: no
   with_items:
     - dovecot
