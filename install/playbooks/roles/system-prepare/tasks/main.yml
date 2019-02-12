@@ -18,7 +18,7 @@
 - name: Upgrade the distribution
   tags: apt
   apt:
-    upgrade: true
+    upgrade: dist
 
 - name: Install common packages
   tags: apt 
@@ -61,7 +61,7 @@
   when: packages_cache.changed
   tags: apt
   apt:
-    upgrade: yes
+    upgrade: full
 
 # We are going to install the "unattended-upgrades" package, and to
 # configure it to install security updates automatically.
