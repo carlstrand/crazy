@@ -1,5 +1,4 @@
 ---
-
 - name: Create a directory for web site backup if it does not exists
   tags: backup
   delegate_to: localhost
@@ -77,9 +76,9 @@
     path: '/var/www/default/{{ path }}'
     state: absent
   with_items:
-      - index-demo.html
-      - css/demo.css
-      - js/demo.js
+    - index-demo.html
+    - css/demo.css
+    - js/demo.js
   loop_control:
     loop_var: path
 

@@ -1,16 +1,13 @@
 ---
-
 - name: Install opendkim packages for mail signing
   tags: dkim
   notify: Restart opendkim
   apt:
-    name: "{{ pkg }}"
+    name: '{{ pkg }}'
     state: present
-  with_items:
+  loop:
     - opendkim
     - opendkim-tools
-  loop_control:
-    loop_var: pkg
 
 - name: Create directory to install the keys
   tags: dkim

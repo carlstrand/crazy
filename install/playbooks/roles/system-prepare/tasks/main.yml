@@ -21,7 +21,17 @@
 - name: Install common packages
   tags: apt
   apt:
-    name: ['ufw', 'rsync', 'makepasswd', 'haveged', 'nginx', 'acl', 'certbot', 'git']
+    name:
+      [
+        'ufw',
+        'rsync',
+        'makepasswd',
+        'haveged',
+        'nginx',
+        'acl',
+        'certbot',
+        'git',
+      ]
     state: present
 
 # - name: Sync repo

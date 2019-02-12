@@ -1,16 +1,15 @@
 ---
-
 - name: Get the passwords generated in the accounts tasks
   tags: roundcube
   set_fact:
-    roPasswdParams: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/readonly.pwd length=16 chars=ascii_letters,digits"
+    roPasswdParams: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/readonly.pwd length=16 chars=ascii_letters,digits'
 
 - name: Install roundcube webmail
   tags: roundcube
   apt:
-    name: "{{ pkg }}"
+    name: '{{ pkg }}'
     state: present
-  with_items:
+  loop:
     - postgresql
     - roundcube-pgsql
     - roundcube-core
@@ -22,12 +21,10 @@
     - php-ldap
     - php-net-sieve
     - php-net-ldap2
-    - php-net-ldap3       # For LDAP address book
-    - php7.0-pspell       # For spell checking
+    - php-net-ldap3 # For LDAP address book
+    - php7.0-pspell # For spell checking
     - aspell
-    - php7.0-zip          # For multiple attachments download
-  loop_control:
-    loop_var: pkg
+    - php7.0-zip # For multiple attachments download
 
 - name: Compute max upload size from max attachment size
   tags: roundcube
@@ -172,7 +169,6 @@
       new: dovecot_impersonate
   loop_control:
     loop_var: folder
-
 
 # AppArmor configuration ======================================================
 

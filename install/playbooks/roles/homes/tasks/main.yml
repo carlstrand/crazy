@@ -1,5 +1,4 @@
 ---
-
 - name: Create the group home folders if necessary
   tags: accounts
   file:

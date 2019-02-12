@@ -1,5 +1,4 @@
 ---
-
 - name: Create the backup ssh-key folder if it does not exists
   tags: sync
   register: backup_ssh_dir
@@ -7,7 +6,6 @@
   file:
     path: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ssh-keys/{{ key.user }}/'
     state: directory
-
 
 # The '--update' option make sure to not overwrite already copied ssh keys.
 - name: If the keys have been generated before, copy them on the remote server
@@ -66,5 +64,4 @@
       Find attached the public SSH key for the {{ key.user }} user.
       This will be used for backup purposes. The user name will be
       "{{ key.name }}"
-    attach:
-      - '{{ key.path }}{{ key.name }}.rsa.pub'
+    attach: '{{ key.path }}{{ key.name }}.rsa.pub'

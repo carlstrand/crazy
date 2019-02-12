@@ -5,7 +5,6 @@
 # Users can specify copy partial branches of default values, and not worry
 # about new version changes.
 
-
 ################################################################################
 # Merge user options with default options
 - name: Combine default and user defined network settings
@@ -213,7 +212,6 @@
   debug:
     var: webmail
 
-
 ################################################################################
 # Merge website defaults
 - name: Combine default and user defined website settings
@@ -260,7 +258,6 @@
   debug:
     var: backup
 
-
 ################################################################################
 # Merge defaults development settings
 - name: Combine default and user defined devel settings
@@ -306,7 +303,6 @@
   tags: defaults
   debug:
     var: dkim
-
 
 ################################################################################
 # Merge defaults DMARC keys settings
@@ -377,7 +373,6 @@
   debug:
     var: bind
 
-
 # ################################################################################
 # # Merge defaults gogs settings
 # - name: Combine default and user defined gogs settings
@@ -400,7 +395,6 @@
 #   tags: defaults
 #   debug:
 #     var: gogs
-
 
 # ################################################################################
 # # Merge defaults transmission settings

@@ -1,9 +1,17 @@
 ---
-
 - name: Install clamav antivirus suite
   register: clamav_packages
   apt:
-    name: ['clamav','clamav-base','clamav-daemon','clamav-freshclam','clamdscan','clamsmtp','ipcalc']
+    name:
+      [
+        'clamav',
+        'clamav-base',
+        'clamav-daemon',
+        'clamav-freshclam',
+        'clamdscan',
+        'clamsmtp',
+        'ipcalc',
+      ]
     state: latest
 
 - name: Set up the configuration file

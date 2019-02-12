@@ -5,10 +5,8 @@
   apt:
     name: '{{ pkg }}'
     state: latest
-  with_items:
+  loop:
     - opendmarc
-  loop_control:
-    loop_var: pkg
 
 - name: Comment all active socket for DMARC
   tags: opendmarc

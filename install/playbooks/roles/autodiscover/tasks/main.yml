@@ -1,5 +1,4 @@
 ---
-
 - name: Create the autoconfiguration directories
   file:
     path: /var/www/autodiscover/autodiscover/

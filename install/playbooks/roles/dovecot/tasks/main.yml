@@ -1,5 +1,4 @@
 ---
-
 ################################################################################
 # Install dovecot packages
 # Set the default repository to download dovecot packages
@@ -16,25 +15,21 @@
 - name: Install dovecot packages
   tags: dovecot
   apt:
-    name: "{{ pkg }}"
+    name: '{{ pkg }}'
     default_release: '{{ dovecot_repository }}'
     state: latest
-  with_items:
+  loop:
     - '{{ dovecot.packages }}'
-  loop_control:
-    loop_var: pkg
 
 - name: Install dovecot packages for full text search
   when: mail.fts.active
   tags: dovecot
   apt:
-    name: "{{ pkg }}"
+    name: '{{ pkg }}'
     state: latest
     default_release: '{{ dovecot_repository }}'
-  with_items:
+  loop:
     - dovecot-solr
-  loop_control:
-    loop_var: pkg
 
 - name: Allow mail damon to access the users directory
   file:
@@ -102,13 +97,13 @@
   tags: config
   when: mail.fts.active
   set_fact:
-    mail_plugins: "{{ mail_plugins }} fts fts_solr"
+    mail_plugins: '{{ mail_plugins }} fts fts_solr'
 
 - name: Add virtual mailboxes to the list of mail plugins
   tags: config
   when: mail.virtual_folders.active
   set_fact:
-    mail_plugins: "{{ mail_plugins }} virtual"
+    mail_plugins: '{{ mail_plugins }} virtual'
 
 - name: Create dovecot conf.d configuration files
   tags: config
@@ -190,7 +185,7 @@
   when: mail.impersonate.active
   tags: impersonate
   set_fact:
-    master_password_params: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/master.pwd {{ policies.system.password }}"
+    master_password_params: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/master.pwd {{ policies.system.password }}'
 
 - name: Create the master user account password
   when: mail.impersonate.active
@@ -218,7 +213,7 @@
   when: mail.import.active
   tags: impersonate
   set_fact:
-    import_password_params: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/import.pwd {{ policies.system.password }}"
+    import_password_params: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/import.pwd {{ policies.system.password }}'
 
 - name: Create the import user account password
   when: mail.import.active
@@ -334,7 +329,23 @@
   apt:
     update_cache: yes
     cache_valid_time: 86400
-    name: ['tomcat8','solr-tomcat','dovecot-solr','poppler-utils','catdoc','unzip','docx2txt','odt2txt','xlsx2csv','unrtf','gzip','p7zip-full','p7zip-rar','tnef']
+    name:
+      [
+        'tomcat8',
+        'solr-tomcat',
+        'dovecot-solr',
+        'poppler-utils',
+        'catdoc',
+        'unzip',
+        'docx2txt',
+        'odt2txt',
+        'xlsx2csv',
+        'unrtf',
+        'gzip',
+        'p7zip-full',
+        'p7zip-rar',
+        'tnef',
+      ]
     state: latest
 
 - name: Copy decode2text script
@@ -354,7 +365,6 @@
     owner: dovecot
     group: dovecot
     state: touch
-
 
 - name: Copy fts mime configuration files
   when: mail.fts.active
@@ -423,7 +433,7 @@
     path: /etc/fail2ban/jail.conf
     option: enabled
     section: '{{ section }}'
-    value: "true"
+    value: 'true'
     create: no
   with_items:
     - dovecot

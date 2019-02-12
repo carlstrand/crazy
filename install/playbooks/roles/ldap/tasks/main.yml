@@ -1,5 +1,4 @@
 ---
-
 - name: Network settings
   tags: debug
   debug:
@@ -73,18 +72,9 @@
 - name: Install the required packages
   tags: dpkg
   apt:
-    name: '{{ item }}'
+    name: ['acl','slapd','python-ldap','python-passlib','ldapscripts','libpam-pwquality','cracklib-runtime','ldapvi','nscd']
     state: latest
-  with_items:
-    - acl
-    - slapd
-    - python-ldap
-    - python-passlib
-    - ldapscripts
-    - libpam-pwquality
-    - cracklib-runtime
-    - ldapvi
-    - nscd
+    
 
 # Changes in the database will be stored there
 - name: Create the ldap config changes folder
@@ -104,12 +94,10 @@
     etype: user
     permissions: rx
     state: present
-  with_items:
-      - /etc/letsencrypt
-      - /etc/letsencrypt/archive
-      - /etc/letsencrypt/live
-  loop_control:
-    loop_var: path
+  loop:
+    - /etc/letsencrypt
+    - /etc/letsencrypt/archive
+    - /etc/letsencrypt/live
 
 - name: Configure the ldap server for SSL / TLS
   notify: Restart the ldap service
@@ -264,7 +252,7 @@
     bind_pw: '{{ lookup("password", ldap.adminPasswdParams) }}'
     dn: 'cn={{ group.gid }},{{ ldap.groups.dn }}'
     attributes:
-      cn:  '{{ group.description }}'
+      cn: '{{ group.description }}'
       gidNumber: '{{ group.gidNumber }}'
     objectClass:
       - top
@@ -327,7 +315,7 @@
       uid: '{{ user.1.uid }}'
       givenName: '{{ user.1.first_name }}'
       sn: '{{ user.1.last_name }}'
-      userPassword: "{{ user.1.password }}"
+      userPassword: '{{ user.1.password }}'
       pwdPolicySubentry: 'cn=default,ou=pwpolicies,{{ ldap.organization.base }}'
       homeDirectory: '/home/users/{{ user.1.uid }}'
       loginShell: '{{ users_defaults.shell }}'
@@ -417,12 +405,6 @@
   set_fact:
     postmaster_aliases: '{{ ldap.postmaster.mailAliases }}'
 
-- name: Extend the postmaster aliases when sogo is installed
-  when: sogo.install
-  tags: postmaster
-  set_fact:
-    postmaster_aliases: '{{ postmaster_aliases | union(["sogo@" + network.domain]) }}'
-
 - name: Create the postmaster account
   tags: postmaster
   ldap_entry:
@@ -465,11 +447,8 @@
 
 - name: Install the required packages for interactive login
   apt:
-    name: '{{ item }}'
+    name: ['libnss-ldapd', 'libpam-ldapd']
     state: present
-  with_items:
-    - libnss-ldapd
-    - libpam-ldapd
 
 - name: Update the ldap configuration file
   template:

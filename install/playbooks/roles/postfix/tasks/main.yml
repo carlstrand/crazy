@@ -1,21 +1,18 @@
 ---
-
 # Install postfix packages
 - name: Install postfix packages
   tags: postfix
   notify: Restart postfix
   apt:
-    name: "{{ pkg }}"
+    name: '{{ pkg }}'
     state: present
-  with_items:
+  loop:
     - postfix
     - postfix-cdb
     - postfix-pcre
     - postfix-ldap
     - sasl2-bin
     - postfix-policyd-spf-python
-  loop_control:
-    loop_var: pkg
 
 ################################################################################
 # At this point, the certificates should have been created already #############
@@ -49,13 +46,11 @@
   tags: postfix
   notify: Restart postfix
   apt:
-    name: "{{ pkg }}"
+    name: '{{ pkg }}'
     state: present
-  with_items:
+  loop:
     - pfqueue
     - bsd-mailx
-  loop_control:
-    loop_var: pkg
 
 # The typical base64 overhead is 33%, and the value in the configuration file is in Mb
 # So the value is max_attachment_size * 1.33 * 1024 * 1024, i.e. max_attachment_size * 1394606
@@ -69,8 +64,8 @@
   tags: config
   notify: Restart postfix
   template:
-    src: "{{ file }}"
-    dest: "/etc/postfix/{{ file }}"
+    src: '{{ file }}'
+    dest: '/etc/postfix/{{ file }}'
   with_items:
     - master.cf
     - main.cf
@@ -82,7 +77,7 @@
 - name: Refresh the senders bcc map
   tags: postfix
   notify: Restart postfix
-  command: "postmap /etc/postfix/{{ file }}"
+  command: 'postmap /etc/postfix/{{ file }}'
   with_items:
     - senders-bcc.cf
   loop_control:
@@ -112,34 +107,34 @@
   tags: security, apparmor
   set_fact:
     postfix_apparmor_profiles:
-    - usr.lib.postfix.anvil
-    - usr.lib.postfix.bounce
-    - usr.lib.postfix.cleanup
-    - usr.lib.postfix.discard
-    - usr.lib.postfix.error
-    - usr.lib.postfix.flush
-    - usr.lib.postfix.lmtp
-    - usr.lib.postfix.local
-    - usr.lib.postfix.master
-    - usr.lib.postfix.nqmgr
-    - usr.lib.postfix.oqmgr
-    - usr.lib.postfix.pickup
-    - usr.lib.postfix.pipe
-    - usr.lib.postfix.proxymap
-    - usr.lib.postfix.qmgr
-    - usr.lib.postfix.qmqpd
-    - usr.lib.postfix.scache
-    - usr.lib.postfix.showq
-    - usr.lib.postfix.smtp
-    - usr.lib.postfix.smtpd
-    - usr.lib.postfix.spawn
-    - usr.lib.postfix.tlsmgr
-    - usr.lib.postfix.trivial-rewrite
-    - usr.lib.postfix.verify
-    - usr.lib.postfix.virtual
-    - usr.sbin.sendmail
-    - usr.sbin.postdrop
-    - usr.sbin.postqueue
+      - usr.lib.postfix.anvil
+      - usr.lib.postfix.bounce
+      - usr.lib.postfix.cleanup
+      - usr.lib.postfix.discard
+      - usr.lib.postfix.error
+      - usr.lib.postfix.flush
+      - usr.lib.postfix.lmtp
+      - usr.lib.postfix.local
+      - usr.lib.postfix.master
+      - usr.lib.postfix.nqmgr
+      - usr.lib.postfix.oqmgr
+      - usr.lib.postfix.pickup
+      - usr.lib.postfix.pipe
+      - usr.lib.postfix.proxymap
+      - usr.lib.postfix.qmgr
+      - usr.lib.postfix.qmqpd
+      - usr.lib.postfix.scache
+      - usr.lib.postfix.showq
+      - usr.lib.postfix.smtp
+      - usr.lib.postfix.smtpd
+      - usr.lib.postfix.spawn
+      - usr.lib.postfix.tlsmgr
+      - usr.lib.postfix.trivial-rewrite
+      - usr.lib.postfix.verify
+      - usr.lib.postfix.virtual
+      - usr.sbin.sendmail
+      - usr.sbin.postdrop
+      - usr.sbin.postqueue
 
 - name: Install some postfix AppArmor profile
   when: security.app_armor
@@ -187,7 +182,7 @@
     path: /etc/fail2ban/jail.conf
     option: enabled
     section: '{{ section }}'
-    value: true
+    value: 'true'
     create: no
   with_items:
     - postfix

@@ -1,5 +1,4 @@
 ---
-
 sieve:
   global_scripts:
     - duplicate-checks.sieve

@@ -1,5 +1,4 @@
 ---
-
 - name: Create the autoconfiguration directories
   tags: autoconfig
   file:
