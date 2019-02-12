@@ -491,8 +491,8 @@
   become: true
   become_user: openldap
   become_method: sudo
-  command: 'slapindex -n 1 -v {{ field }}'
-  with_items:
+  command: 'slapindex -n 1 -v {{ item }}'
+  loop:
     - uid
     - cn
     - sn
@@ -502,8 +502,6 @@
     - uidNumber
     - gidNumber
     - intlMailAddr
-  loop_control:
-    loop_var: field
 
 - name: Add local accounts to users groups
   tags: groups
@@ -526,13 +524,11 @@
     bind_pw: '{{ lookup("password", ldap.adminPasswdParams) }}'
     dn: 'cn=administrators,{{ ldap.groups.dn }}'
     name: memberUid
-    values: '{{ uid }}'
+    values: '{{ item }}'
     state: present
-  with_items:
+  loop:
     - manager
     - postmaster
-  loop_control:
-    loop_var: uid
 
 - name: Install the nslcd package to map LDAP users to system users
   notify: Restart the ldap service
