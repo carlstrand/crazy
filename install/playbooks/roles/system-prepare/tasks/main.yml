@@ -1,6 +1,4 @@
 ---
-
-
 # Install the most required packages
 - name: Update packages cache
   tags: apt
@@ -21,7 +19,7 @@
     upgrade: dist
 
 - name: Install common packages
-  tags: apt 
+  tags: apt
   apt:
     name: ['ufw', 'rsync', 'makepasswd', 'haveged', 'nginx', 'acl', 'certbot']
     state: present
@@ -127,7 +125,7 @@
 - name: Install ufw / fail2ban and automatic security updates
   tags: apt, security
   apt:
-    name: ['{{ defaults.packages }}']
+    name: ['unattended-upgrades', 'ufw', 'fail2ban', 'rblcheck', 'locales']
     state: present
 
 - name: Install AppArmor packages
@@ -136,7 +134,6 @@
   apt:
     name: ['apparmor', 'apparmor-profiles', 'apparmor-utils']
     state: latest
-
 
 - name: Configure grub to add apparmor by default on boot
   register: grub_config

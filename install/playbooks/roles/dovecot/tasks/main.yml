@@ -334,25 +334,8 @@
   apt:
     update_cache: yes
     cache_valid_time: 86400
-    name: '{{ pkg }}'
+    name: ['tomcat8','solr-tomcat','dovecot-solr','poppler-utils','catdoc','unzip','docx2txt','odt2txt','xlsx2csv','unrtf','gzip','p7zip-full','p7zip-rar','tnef']
     state: latest
-  with_items:
-    - tomcat8
-    - solr-tomcat
-    - dovecot-solr
-    - poppler-utils
-    - catdoc
-    - unzip
-    - docx2txt
-    - odt2txt
-    - xlsx2csv
-    - unrtf
-    - gzip
-    - p7zip-full
-    - p7zip-rar
-    - tnef
-  loop_control:
-    loop_var: pkg
 
 - name: Copy decode2text script
   when: mail.fts.active

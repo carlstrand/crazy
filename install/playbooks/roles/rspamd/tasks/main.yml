@@ -10,26 +10,21 @@
 - name: Add rspamd GPG key
   tags: rspamd
   apt_key:
-    url: https://rspamd.com/apt-stable/gpg.key
+    url: https://rspamd.com/apt/gpg.key
     state: present
 
 - name: Add rspamd repository
   tags: rspamd
   apt_repository:
-    repo: deb http://rspamd.com/apt-stable/ stretch main
+    repo: deb http://rspamd.com/apt/ bionic main
     state: present
     filename: 'rspamd'
 
 - name: Install rspamd packages
   tags: rspamd
   apt:
-    name: "{{ pkg }}"
+    name: ['rspamd','redis-server']
     state: present
-  with_items:
-    - redis-server
-    - rspamd
-  loop_control:
-    loop_var: pkg
 
 - name: Set facts for rspamd password generation
   tags: rspamd
