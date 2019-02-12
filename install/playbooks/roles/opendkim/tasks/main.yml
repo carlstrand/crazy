@@ -3,7 +3,7 @@
   tags: dkim
   notify: Restart opendkim
   apt:
-    name: '{{ pkg }}'
+    name: '{{ item }}'
     state: present
   loop:
     - opendkim

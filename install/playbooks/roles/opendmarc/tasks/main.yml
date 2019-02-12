@@ -3,7 +3,7 @@
 - name: Install opendmarc related packages
   tags: opendmarc
   apt:
-    name: '{{ pkg }}'
+    name: '{{ item }}'
     state: latest
   loop:
     - opendmarc
@@ -29,12 +29,10 @@
   tags: opendmarc
   lineinfile:
     path: /etc/opendmarc.conf
-    line: '{{ line }}'
-  with_items:
+    line: '{{ item }}'
+  loop:
     - 'Socket inet:{{ dmarc.milter.port }}@localhost'
     - 'AutoRestart 1'
-  loop_control:
-    loop_var: line
 
 - name: Generate DMARC record from settings
   tags: bind

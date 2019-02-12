@@ -7,7 +7,7 @@
 - name: Install roundcube webmail
   tags: roundcube
   apt:
-    name: '{{ pkg }}'
+    name: '{{ item }}'
     state: present
   loop:
     - postgresql

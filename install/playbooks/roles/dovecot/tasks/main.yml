@@ -15,21 +15,17 @@
 - name: Install dovecot packages
   tags: dovecot
   apt:
-    name: '{{ pkg }}'
+    name: '{{ dovecot.packages }}'
     default_release: '{{ dovecot_repository }}'
     state: latest
-  loop:
-    - '{{ dovecot.packages }}'
 
 - name: Install dovecot packages for full text search
   when: mail.fts.active
   tags: dovecot
   apt:
-    name: '{{ pkg }}'
+    name: 'dovecot-solr'
     state: latest
     default_release: '{{ dovecot_repository }}'
-  loop:
-    - dovecot-solr
 
 - name: Allow mail damon to access the users directory
   file:

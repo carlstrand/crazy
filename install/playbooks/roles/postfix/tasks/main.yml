@@ -4,7 +4,7 @@
   tags: postfix
   notify: Restart postfix
   apt:
-    name: '{{ pkg }}'
+    name: '{{ item }}'
     state: present
   loop:
     - postfix
@@ -46,7 +46,7 @@
   tags: postfix
   notify: Restart postfix
   apt:
-    name: '{{ pkg }}'
+    name: '{{ item }}'
     state: present
   loop:
     - pfqueue

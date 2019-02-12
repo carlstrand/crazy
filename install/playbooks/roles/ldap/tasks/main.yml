@@ -89,7 +89,7 @@
   notify: Restart the ldap service
   tags: cert
   acl:
-    path: '{{ path }}'
+    path: '{{ item }}'
     entity: openldap
     etype: user
     permissions: rx

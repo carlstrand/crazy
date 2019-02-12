@@ -2,7 +2,7 @@
 
 - name: Install PostgreSQL database server
   apt:
-    name: "{{ pkg }}"
+    name: "{{ item }}"
     state: present
   loop:
     - postgresql-common
