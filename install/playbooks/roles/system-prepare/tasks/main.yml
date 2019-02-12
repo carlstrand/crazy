@@ -21,8 +21,17 @@
 - name: Install common packages
   tags: apt
   apt:
-    name: ['ufw', 'rsync', 'makepasswd', 'haveged', 'nginx', 'acl', 'certbot']
+    name: ['ufw', 'rsync', 'makepasswd', 'haveged', 'nginx', 'acl', 'certbot', 'git']
     state: present
+
+# - name: Sync repo
+#   git:
+#     dest: ~/crazy
+#     repo: 'https://github.com/carlstrand/crazy.git'
+#     force: yes
+#     depth: 1
+#     update: yes
+#     clone: yes
 
 - name: Make sure letsencrypt directory exists
   file:

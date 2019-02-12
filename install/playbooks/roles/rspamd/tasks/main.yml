@@ -16,7 +16,7 @@
 - name: Add rspamd repository
   tags: rspamd
   apt_repository:
-    repo: deb http://rspamd.com/apt/ bionic main
+    repo: 'deb http://rspamd.com/apt/ bionic main'
     state: present
     filename: 'rspamd'
 
