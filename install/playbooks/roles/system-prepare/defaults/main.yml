@@ -14,6 +14,6 @@ defaults:
 # Dictionaries to install in the system
 dictionaries:
   - name: Swedish
-    id: sv_SE
+    id: sv
   - name: English
     id: en
