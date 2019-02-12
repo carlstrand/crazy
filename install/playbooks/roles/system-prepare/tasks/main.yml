@@ -216,7 +216,9 @@
   apt:
     name: 'aspell-{{ dict.id }}'
     state: present
-  loop: '{{ dictionaries }}'
+  with_items: '{{ dictionaries }}'
+  loop_control:
+    loop_var: dict
 
 - name: Create a composition directory for bind
   when: bind.install
