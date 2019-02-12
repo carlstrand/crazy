@@ -65,13 +65,13 @@ encryption:
 ###############################################################################
 # Email related default options
 mail_default:
-  max_attachment_size: 25   # In megabytes
-  autoconfig: true          # Support Thunderbird automatic configuration
+  max_attachment_size: 4096   # In megabytes
+  autoconfig: false          # Support Thunderbird automatic configuration
   autodiscover: false       # Support MS Outlook automatic configuration (uses https)
   quota:
     port: 30000             # port used by dovecot for the quota daemon
     default: 1G             # Maximum allowed mailbox size for your users.
-  discard_duplicates: false # Discard duplicates messages. It is safe, but has some side
+  discard_duplicates: true # Discard duplicates messages. It is safe, but has some side
                             # effects when you are sending a message to a mailing list.
                             # This is now disabled by default.
                             # The default timerange to search duplicated messages is one hour.
@@ -125,8 +125,8 @@ mail_default:
   fts:
     active: true
     langs:
-      - id: fr
-        name: French
+      - id: sv
+        name: Swedish
       - id: en
         name: English
   #############################################################################
@@ -137,7 +137,7 @@ mail_default:
                             # It is useful to put a limit here if you have a lot of messages
                             # and limited hardware resources
   #############################################################################
-  advanced_features: false  # Use some advanced features that will need the latest version
+  advanced_features: true  # Use some advanced features that will need the latest version
                             # of dovecot
                             # from stretch-backports, like those below.
                             # like sending emails to an international addresses
@@ -191,8 +191,8 @@ passwords_default:
 system_default:
   release: stretch
   login: true
-  devel: false
-  debug: false
+  devel: true
+  debug: true
 
 ###############################################################################
 # Once the system is in place, it is possible to use 'limit' for the rule,
@@ -225,13 +225,15 @@ firewall_default:
 # Extra security values
 security_default:
   auto_update: true
-  app_armor: true
+  app_armor: false
   ssh_disable_root_access_with_password: true
-  lock_root_password: true
+  lock_root_password: false
 
 ###############################################################################
 # Dictionaries to install in the system
 dictionaries_default:
+  - name: Swedish
+    id: sv
   - name: English
     id: en
 
@@ -240,7 +242,7 @@ dictionaries_default:
 # Still requests two certificates:
 # One for for https://yourdomain.com/ and one for https://www.yourdomain.com
 website_default:
-  install: false
+  install: true
 
 ###############################################################################
 # Install a webmail, or not...
@@ -330,35 +332,35 @@ dmarc_default:
 # By default, the server is open to other servers (public flag to true).
 # To restrict to only a few domains, set the flag to false, and
 # enter the list of domains in the trust array
-ejabberd_default:
-  install: true
-  allow_contrib_modules: false
-  # Ban clients after too much authentication failures (1h after 10 attempts)
-  fail2ban:
-    active: true
-    lifetime: 3600
-    failures: 10
-  # Server-to-server communication
-  s2s:
-    active: true
-    use_starttls: required_trusted
-    public: true
-    trust:
-      - jabber.org
-  # https upload module
-  http_upload:
-    port: 5443
-    secret_length: 40
-    max_size: 104857600
-    thumbnail: false
-  # direct file transfer
-  file_transfer:
-    port: 7778
-  # traffic shaper
-  shaper:
-    normal: 1000
-    fast: 50000
-    proxyrate: 10240 # file transfer proxy
+# ejabberd_default:
+#   install: true
+#   allow_contrib_modules: false
+#   # Ban clients after too much authentication failures (1h after 10 attempts)
+#   fail2ban:
+#     active: true
+#     lifetime: 3600
+#     failures: 10
+#   # Server-to-server communication
+#   s2s:
+#     active: true
+#     use_starttls: required_trusted
+#     public: true
+#     trust:
+#       - jabber.org
+#   # https upload module
+#   http_upload:
+#     port: 5443
+#     secret_length: 40
+#     max_size: 104857600
+#     thumbnail: false
+#   # direct file transfer
+#   file_transfer:
+#     port: 7778
+#   # traffic shaper
+#   shaper:
+#     normal: 1000
+#     fast: 50000
+#     proxyrate: 10240 # file transfer proxy
 
 ###############################################################################
 # Gandi automatic DNS update
@@ -370,7 +372,7 @@ ejabberd_default:
 # add_wildcard:  Create a wildcard entry to redirect all traffic to your box
 dns_default:
   update: false
-  test: true
+  test: false
   add_wildcard: true
   gandi:
     handle: JD123-GANDI
@@ -421,46 +423,15 @@ bind_default:
 # Gogs installation with LDAP authentication
 # Beta feature, work in progress
 # The super administrator is "postmaster" for now.
-gogs_default:
-  install: false
-  public: false         # not open to public by default
-  allow:                # a list of IP address that can access the web interface
-    - 192.168.0.0/16    # RFC1918 local networks
-    - 172.16.0.0/12
-    - 10.0.0.0/8
+# gogs_default:
+#   install: false
+#   public: false         # not open to public by default
+#   allow:                # a list of IP address that can access the web interface
+#     - 192.168.0.0/16    # RFC1918 local networks
+#     - 172.16.0.0/12
+#     - 10.0.0.0/8
 
 
-###############################################################################
-# Transmission bittorrent client installation
-transmission_default:
-  install: false
-  public: false         # not open to public by default, only to local networks
-  allow:                # a list of IP address that can access the web interface
-    - 192.168.0.0/16    # RFC1918 local networks
-    - 172.16.0.0/12
-    - 10.0.0.0/8
-  # Block list
-  # example: http://john.bitsurge.net/public/biglist.p2p.gz
-  blocklist_url: ~
-  # Protocol options
-  pex: true
-  dht: true
-  port_forwarding: false
-  # Encryption parameters
-  # 0 = unencrypted, 1 = prefer encrypted, 2 = require encrypted
-  encryption: 2
-  # Directories
-  download_dir: /var/lib/transmission-daemon/downloads
-  incomplete_dir: /var/lib/transmission-daemon/incomplete
-  # Download parameters
-  speed_limit_down: 0
-  download_limit: 100
-  download_queue: 5
-  download_theme: light    # or dark
-  # Upload limits
-  speed_limit_up: 0
-  upload_limit: 100
-  seed_queue_size: 5
 
 # Default posix groups
 posix_groups_default:
@@ -474,11 +445,11 @@ posix_groups_default:
   mail: 'admin@{{ network.domain }}'
 
 # The onion router
-tor_default:
-  install: false
-  port: 9050
-  accept_from:
-    - 127.0.0.1
+# tor_default:
+#   install: false
+#   port: 9050
+#   accept_from:
+#     - 127.0.0.1
 
 # Privoxy privacy proxy
 privoxy_default:
@@ -493,29 +464,29 @@ privoxy_default:
     # even on multiple lines
 
 # Zabbix monitoring
-zabbix_default:
-  install: false
-  guest_account: false  # Allow guest account or not
-  public: false         # not open to public by default
-  allow:                # a list of IP address that can access the web interface
-    - 192.168.0.0/16    # RFC1918 local networks
-    - 172.16.0.0/12
-    - 10.0.0.0/8
+# zabbix_default:
+#   install: false
+#   guest_account: false  # Allow guest account or not
+#   public: false         # not open to public by default
+#   allow:                # a list of IP address that can access the web interface
+#     - 192.168.0.0/16    # RFC1918 local networks
+#     - 172.16.0.0/12
+#     - 10.0.0.0/8
 
 # Default settings for SOGo groupware
-sogo_default:
-  install: true
-  appointment_send_emails: true
-  vacation: true
-  forward: true
-  sieve_scripts: true
-  first_day_of_week: 1 # 1 is Monday
-  day_start_time: 9
-  day_end_time: 17
-  time_format: '%H:%M'
-  refresh_view_check: every_minute
-  auxiliary_accounts: true
-  # Possible values: https://sogo.nu/files/docs/SOGoInstallationGuide.html#_general_preferences
-  language: English
-  enable_public_access: false
-  password_change: true
+# sogo_default:
+#   install: true
+#   appointment_send_emails: true
+#   vacation: true
+#   forward: true
+#   sieve_scripts: true
+#   first_day_of_week: 1 # 1 is Monday
+#   day_start_time: 9
+#   day_end_time: 17
+#   time_format: '%H:%M'
+#   refresh_view_check: every_minute
+#   auxiliary_accounts: true
+#   # Possible values: https://sogo.nu/files/docs/SOGoInstallationGuide.html#_general_preferences
+#   language: English
+#   enable_public_access: false
+#   password_change: true

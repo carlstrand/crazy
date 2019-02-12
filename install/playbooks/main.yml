@@ -11,26 +11,26 @@
 - import_playbook: remote-access.yml
 
 # Install fwknop (Single Packet Authorization)
-# - import_playbook: fwknop-client.yml
-#   when: firewall.fwknop.install
-# - import_playbook: fwknop-server.yml
-#   when: firewall.fwknop.install
+- import_playbook: fwknop-client.yml
+  when: firewall.fwknop.install
+- import_playbook: fwknop-server.yml
+  when: firewall.fwknop.install
 
 # Install dropbear to remotely unlock the system.
 # Will not do anything if the drive is not encrypted
-#- import_playbook: luks-remote.yml
+- import_playbook: luks-remote.yml
 
 # Install nginx as the default web server,
 # it is needed to obtain certificates with certbot.
 - import_playbook: nginx.yml
 
 # Install the DNS server first if requested
-- import_playbook: dns-server-bind.yml
-  when: bind.install
+#- import_playbook: dns-server-bind.yml
+#  when: bind.install
 
-# Check if the DNS entries are now propagated on internet
-- import_playbook: dns-server-check-propagation.yml
-  when: bind.install
+## Check if the DNS entries are now propagated on internet
+#- import_playbook: dns-server-check-propagation.yml
+#  when: bind.install
 
 # At this point, if you have installed bind,
 # perhaps you should wait a few hours until
@@ -48,12 +48,8 @@
 # System protection: antispam
 - import_playbook: rspamd.yml
   when: mail.antispam.active
-
-# Install the web frontend for the antispam system
 - import_playbook: rspamd-web.yml
   when: mail.antispam.webui.active
-
-# System protection: antivirus
 - import_playbook: clamav.yml
   when: mail.antivirus.active
 
@@ -89,8 +85,8 @@
 
 
 # Build the complete DNS server zones file
-- import_playbook: dns-server-bind-refresh.yml
-  when: bind.install
+#- import_playbook: dns-server-bind-refresh.yml
+#  when: bind.install
 
 # Clean up the system before going live
 - import_playbook: system-cleanup.yml

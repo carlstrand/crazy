@@ -21,10 +21,10 @@ for fqdn in $RENEWED_DOMAINS; do
             ;;
 
         # Restart the LDAP server
-        ldap)
-	    echo "Reloading LDAP server"
-            systemctl restart slapd
-            ;;
+        # ldap)
+	    # echo "Reloading LDAP server"
+        #     systemctl restart slapd
+        #     ;;
 
         # Restart the MTA server
         smtp)
@@ -44,12 +44,12 @@ for fqdn in $RENEWED_DOMAINS; do
             systemctl restart nginx
             ;;
 
-        # Transmission P2P web interface
-        transmission)
-	    echo "Reloading main web site"
-            systemctl reload transmission-daemon
-            systemctl restart nginx
-            ;;
+        # # Transmission P2P web interface
+        # transmission)
+	    # echo "Reloading main web site"
+        #     systemctl reload transmission-daemon
+        #     systemctl restart nginx
+        #     ;;
 
         # Auto-discovery for Outlook
         autodiscover)
@@ -58,11 +58,11 @@ for fqdn in $RENEWED_DOMAINS; do
             ;;
 
         # Gogs site
-        gogs)
-	    echo "Reloading gogs web site"
-            systemctl restart gogs
-            systemctl restart nginx
-            ;;
+        # gogs)
+	    # echo "Reloading gogs web site"
+        #     systemctl restart gogs
+        #     systemctl restart nginx
+        #     ;;
 
         # Webmail site
         webmail)

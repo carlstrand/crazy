@@ -473,72 +473,72 @@
 
 ################################################################################
 # Merge defaults tor settings
-- name: Combine default and user defined tor settings
-  run_once: true
-  when: tor is defined
-  tags: defaults
-  set_fact:
-    tor: '{{ tor_default | combine(tor, recursive=True) }}'
+# - name: Combine default and user defined tor settings
+#   run_once: true
+#   when: tor is defined
+#   tags: defaults
+#   set_fact:
+#     tor: '{{ tor_default | combine(tor, recursive=True) }}'
 
-- name: Use default tor settings
-  run_once: true
-  when: tor is not defined
-  tags: defaults
-  set_fact:
-    tor: '{{ tor_default }}'
+# - name: Use default tor settings
+#   run_once: true
+#   when: tor is not defined
+#   tags: defaults
+#   set_fact:
+#     tor: '{{ tor_default }}'
 
-- name: Display merged tor settings
-  run_once: true
-  when: verbose is defined and verbose == True
-  tags: defaults
-  debug:
-    var: tor
+# - name: Display merged tor settings
+#   run_once: true
+#   when: verbose is defined and verbose == True
+#   tags: defaults
+#   debug:
+#     var: tor
 
 ################################################################################
 # Merge defaults zabbix settings
-- name: Combine default and user defined zabbix settings
-  run_once: true
-  when: zabbix is defined
-  tags: defaults
-  set_fact:
-    zabbix: '{{ zabbix_default | combine(zabbix, recursive=True) }}'
+# - name: Combine default and user defined zabbix settings
+#   run_once: true
+#   when: zabbix is defined
+#   tags: defaults
+#   set_fact:
+#     zabbix: '{{ zabbix_default | combine(zabbix, recursive=True) }}'
 
-- name: Use default zabbix settings
-  run_once: true
-  when: zabbix is not defined
-  tags: defaults
-  set_fact:
-    zabbix: '{{ zabbix_default }}'
+# - name: Use default zabbix settings
+#   run_once: true
+#   when: zabbix is not defined
+#   tags: defaults
+#   set_fact:
+#     zabbix: '{{ zabbix_default }}'
 
-- name: Display merged zabbix settings
-  run_once: true
-  when: verbose is defined and verbose == True
-  tags: defaults
-  debug:
-    var: zabbix
+# - name: Display merged zabbix settings
+#   run_once: true
+#   when: verbose is defined and verbose == True
+#   tags: defaults
+#   debug:
+#     var: zabbix
 
 ################################################################################
 # Merge defaults sogo settings
-- name: Combine default and user defined sogo settings
-  run_once: true
-  when: sogo is defined
-  tags: defaults
-  set_fact:
-    sogo: '{{ sogo_default | combine(sogo, recursive=True) }}'
+# - name: Combine default and user defined sogo settings
+#   run_once: true
+#   when: sogo is defined
+#   tags: defaults
+#   set_fact:
+#     sogo: '{{ sogo_default | combine(sogo, recursive=True) }}'
 
-- name: Use default sogo settings
-  run_once: true
-  when: sogo is not defined
-  tags: defaults
-  set_fact:
-    sogo: '{{ sogo_default }}'
+# - name: Use default sogo settings
+#   run_once: true
+#   when: sogo is not defined
+#   tags: defaults
+#   set_fact:
+#     sogo: '{{ sogo_default }}'
 
-- name: Display merged sogo settings
-  run_once: true
-  when: verbose is defined and verbose == True
-  tags: defaults
-  debug:
-    var: sogo
+# - name: Display merged sogo settings
+#   run_once: true
+#   when: verbose is defined and verbose == True
+#   tags: defaults
+#   debug:
+#     var: sogo
 
 ################################################################################
 # Marking the default settings as loaded should increase the speed of the deployment
