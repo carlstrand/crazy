@@ -233,7 +233,7 @@ security_default:
 # Dictionaries to install in the system
 dictionaries_default:
   - name: Swedish
-    id: sv
+    id: sv_SE
   - name: English
     id: en
 

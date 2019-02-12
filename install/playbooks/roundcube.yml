@@ -1,5 +1,4 @@
 ---
-
 # Install a basic webmail (roundcube)
 - hosts: homebox
   vars:
@@ -7,9 +6,9 @@
     certificate:
       type: webmail
   vars_files:
-    - '{{ playbook_dir }}/../../config/system.yml'
-    - '{{ playbook_dir }}/../../config/defaults.yml'
-    - '{{ playbook_dir }}/roles/roundcube/variables/main.yml'
+    - "{{ playbook_dir }}/../../config/system.yml"
+    - "{{ playbook_dir }}/../../config/defaults.yml"
+    - "{{ playbook_dir }}/roles/roundcube/variables/main.yml"
   roles:
     - certificates
     - roundcube
