@@ -72,9 +72,19 @@
 - name: Install the required packages
   tags: dpkg
   apt:
-    name: ['acl','slapd','python-ldap','python-passlib','ldapscripts','libpam-pwquality','cracklib-runtime','ldapvi','nscd']
+    name:
+      [
+        'acl',
+        'slapd',
+        'python-ldap',
+        'python-passlib',
+        'ldapscripts',
+        'libpam-pwquality',
+        'cracklib-runtime',
+        'ldapvi',
+        'nscd',
+      ]
     state: latest
-    
 
 # Changes in the database will be stored there
 - name: Create the ldap config changes folder

@@ -1,5 +1,4 @@
 ---
-
 # Create the accounts
 # If you set the optino -e clean_users=true then
 # the script will drop the users from the database first
@@ -11,8 +10,8 @@
     - '{{ playbook_dir }}/../../config/defaults.yml'
     - '{{ playbook_dir }}/roles/ldap/variables/main.yml'
   vars:
-    clean_users: '{{ clean | default(false)}}'
-    clean_groups: '{{ clean | default(false)}}'
+    clean_users: '{{ clean | default(true)}}'
+    clean_groups: '{{ clean | default(true)}}'
     certificate:
       type: ldap
   roles:

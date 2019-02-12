@@ -152,18 +152,18 @@ mail_default:
 ###############################################################################
 # Default password policies for users
 passwords_default:
-  min_length: 8
+  min_length: 1
   max_age: 31536000        # 365 days max
   max_failure: 5
   expire_warning: 259200   # 3 days
-  require_nonalpha: true
+  require_nonalpha: false
   # Keep track of the passwords you have used before
   # If you do not want, set this value to 0
   # Passwords are stored using salted SHA512, safe enough
-  remember: 12
+  remember: 0
   # Password quality module
   quality:
-    enforce: true
+    enforce: false
     params:
       - name: retry
         value: 5
@@ -226,7 +226,7 @@ firewall_default:
 security_default:
   auto_update: true
   app_armor: false
-  ssh_disable_root_access_with_password: true
+  ssh_disable_root_access_with_password: false
   lock_root_password: false
 
 ###############################################################################

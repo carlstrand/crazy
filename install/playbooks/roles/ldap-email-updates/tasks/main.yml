@@ -1,5 +1,4 @@
 ---
-
 - name: Update all account email addresses
   ldap_attr:
     bind_dn: '{{ ldap.admin.dn }}'
@@ -47,10 +46,8 @@
     bind_pw: '{{ lookup("password", ldap.adminPasswdParams) }}'
     dn: 'cn=administrators,{{ ldap.groups.dn }}'
     name: memberUid
-    values: '{{ uid }}'
+    values: '{{ item }}'
     state: present
-  with_items:
+  loop:
     - manager
     - postmaster
-  loop_control:
-    loop_var: uid

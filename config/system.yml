@@ -9,6 +9,46 @@ network:
   domain: zvea.co
   hostname: box.zvea.co
 
+
+# LDAP configuration
+ldap:
+  hostname: 'ldap.{{ network.domain }}'
+  organization:
+    domain: '{{ network.domain }}'
+    base: 'dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+  users:
+    dn: 'ou=users,dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+  groups:
+    dn: 'ou=groups,dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+  manager:
+    uid: manager
+    dn: 'cn=manager account, ou=users, dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+  readonly:
+    uid: readonly
+    dn: 'cn=readonly account, ou=users, dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+  admin:
+    dn: 'cn=admin,dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+    desc: administrator account
+  postmaster:
+    uid: postmaster
+    dn: 'cn=postmaster account, ou=users, dc={{ network.domain | regex_replace("\.", ",dc=") }}'
+    # See https://www.ietf.org/rfc/rfc2142.txt
+    mailAliases:
+      - 'abuse@{{ network.domain }}'
+      - 'noc@{{ network.domain }}'
+      - 'security@{{ network.domain }}'
+      - 'mailer-daemon@{{ network.domain }}'
+      - 'webmaster@{{ network.domain }}'
+      - 'hostmaster@{{ network.domain }}'
+      - 'admin@{{ network.domain }}'
+      - 'root@{{ network.domain }}'
+
+  # password params
+  roPasswdParams: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/readonly.pwd {{ policies.system.password }}"
+  managerPasswdParams: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/manager.pwd {{ policies.system.password }}"
+  adminPasswdParams: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/admin.pwd {{ policies.system.password }}"
+  postmasterPasswdParams: "{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/postmaster.pwd {{ policies.system.password }}"
+
 ###############################################################################
 # Users
 # List of users to create in the system
@@ -19,93 +59,44 @@ users:
   last_name: Doe
   mail: mattias@zvea.co
   password: testtest
-  aliases:
-    - john@homebox.space
-  external_accounts:
-    - name: outlook
-      type: live.com
-      user: john.doe@live.co.uk
-      password: ebsipmfwuqsopxsg
-      get_junk: true
-      get_trash: true
-  # Allow access to backup
-  backup_ssh_key:
-    type: ssh-rsa
-    comment: jdoe-backup-key
-    data: >-
-      AAAAB3NzaC1yc2EAAAADAQOSPAABAQDLQ/Odv+oOWbNdaBwegtwBryh/NsRkM6NNRd30kgoza39+
-      TtOIXNcLsnProh6ynJxNBdxxx6wa6/dkA/3opbdprovU676WfWEFOpjNzABGtrgU6uIzihc51nm49/
-      SsP7rNLXfh0ZfQlCjhR6oL+oe3ggnnrPwtEpsZSDjR8Qx4gYCxZ+2H4C5QcvotZ6i/9pc7uv9Gh2Rd
-      iDAoQDIeedZFygruhpFK5VEQnXf2KB8z4MCT1Nwk5/7VUE1xTB0AHoUBMLF4RMmkPrfhfPfGbXL97e
-      BaxeEVdIurdEoYi7EPc3ZT/NI2Rh136mMZLUb7QupinA0yfTc1FEhkDCvE9L/5
-- uid: jane
-  cn: Jane Doe
-  first_name: Jane
-  last_name: Doe
-  mail: jane.doe@example.com
-  password: 'Tlwril!8'
-  aliases:
-    - jane@homebox.space
-  external_accounts:
-    - name: work
-      type: imap
-      host: imap.company.com
-      user: jane
-      password: '0lih*(&nTrom'
-      max_messages: 10
-    - name: gmail
-      type: gmail
-      user: jane.doe@gmail.com
-      password: yjkytvofwbqlcmry
-      get_important: false
-      get_junk: true
-      get_trash: true
-      max_messages: 10
-    - name: yahoo
-      type: ymail
-      user: jane.doe@ymail.com
-      password: zakxizvqpkxzibnn
-      get_junk: true
-      get_trash: true
-      max_messages: 10
 
 ###############################################################################
 # Email related default options
-# mail:
-#   max_attachment_size: 25   # In megabytes
-#   autoconfig: true          # Support Thunderbird automatic configuration
-#   autodiscover: false       # Support MS Outlook automatic configuration (uses https)
-#   quota:
-#     default: 1G             # Maximum allowed mailbox size for your users.
-#                             # The safe maximum value will be automatically computed in a next version.
-#   discard_duplicates: true  # Discard duplicates messages. It is safe, but you can disable if you are worried
+mail:
+  max_attachment_size: 25   # In megabytes
+  autoconfig: true          # Support Thunderbird automatic configuration
+  autodiscover: false       # Support MS Outlook automatic configuration (uses https)
+  quota:
+    default: 1G             # Maximum allowed mailbox size for your users.
+                            # The safe maximum value will be automatically computed in a next version.
+  discard_duplicates: true  # Discard duplicates messages. It is safe, but you can disable if you are worried
 #                             # The default timerange is 1h
 #   #############################################################################
-#   antivirus:                # Check inbound and outbound emails for viruses
-#     active: true            # or false
-#     action: drop            # Action to do when a virus is found in an email: bounce or drop
-#                             # be careful, bouncing external emails is a way to expose clamav usage
-#     send_warnings: false    # Send a warning email to - internal - users who are sending viruses
-#     quarantine: yes         # Place emails with a virus in quarantine, for further analysis
+  antivirus:                # Check inbound and outbound emails for viruses
+    active: true            # or false
+    action: drop            # Action to do when a virus is found in an email: bounce or drop
+                             # be careful, bouncing external emails is a way to expose clamav usage
+    send_warnings: false    # Send a warning email to - internal - users who are sending viruses
+    quarantine: yes         # Place emails with a virus in quarantine, for further analysis
 #   #############################################################################
-#   impersonate:              # Activate dovecot "master" user feature, ideal for families and communities
-#     active: false           # https://wiki2.dovecot.org/Authentication/MasterUsers
-#     master: master          # master user name
-#     separator: '*'          # Separation char between master user / real user name.
+  impersonate:              # Activate dovecot "master" user feature, ideal for families and communities
+    active: true           # https://wiki2.dovecot.org/Authentication/MasterUsers
+    master: master          # master user name
+    separator: '*'          # Separation char between master user / real user name.
 #   #############################################################################
-#   import:                   # If you have users with "import" email active scripts, set this flag to true
-#     username: import        # The name of the user that import emails
-#     active: false           # A master user, with reduced rights will be created, to append miported emails
+  import:                   # If you have users with "import" email active scripts, set this flag to true
+    username: import        # The name of the user that import emails
+    active: false           # A master user, with reduced rights will be created, to append miported emails
 #                             # in user's mailboxes.
 #   #############################################################################
 #   # Dovecot / solr FTS (Full Text search)
-#   fts:
-#     active: true
-#     langs:
-#       - id: fr
-#         name: French
-#       - id: en
-#         name: English
+  fts:
+    active: true
+    langs:
+      - id: sv
+        name: Swedish
+      - id: en
+        name: English
 #   #############################################################################
 #   advanced_features: false  # Use some advanced features that will need the latest version of dovecot
 #                             # from stretch-backports, like those below.
@@ -121,9 +112,14 @@ users:
 
 ###############################################################################
 # System related
+
 system:
+  release: stretch
+  login: true
+  ssl: letsencrypt
   devel: true
   debug: true
+
 
 ###############################################################################
 # Gandi automatic DNS update
@@ -146,15 +142,15 @@ system:
 
 ###############################################################################
 # Install a webmail, or not...
-# webmail:
-#   install: true
-#   type: roundcube
+webmail:
+  install: true
+  type: roundcube
 
 ###############################################################################
 # Extra security values
-# security:
-#   auto_update: true
-#   app_armor: true
+security:
+   auto_update: true
+   app_armor: false
 
 ###############################################################################
 # Backup configuration
@@ -163,9 +159,9 @@ system:
 # All backups will be encrypted
 # Compression: See borg documentation
 
-# backup:
-#   install: false
-#   type: borgbackup
+backup:
+  install: false
+  type: borgbackup
 #   locations:
 
 # Exemple 1: backup on the local disk. Useful for small backup only
