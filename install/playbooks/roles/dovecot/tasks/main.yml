@@ -32,6 +32,27 @@
     path: /home/users
     mode: 0755
 
+
+- name: create vmail group
+  group:
+    name: vmail
+    gid: '5000'
+
+- name: create vmail user
+  user:
+    name: vmail
+    group: vmail
+    uid: '5000'
+    home: /var/mail
+
+- name: create /var/mail/vhosts
+  file:
+    path: /var/mail/vhosts
+    state: directory
+    owner: vmail
+    group: vmail
+
+
 ################################################################################
 # At this point, the certificates should have been created already #############
 # in order to have SSL and TLS encryption activated.                           #
@@ -52,33 +73,31 @@
 #                                                                              #
 # End of TLS / SSL Configuration ###############################################
 
-- name: Ensure the imap server FQDN resolves to localhost
-  tags: dovecot
-  lineinfile:
-    path: /etc/hosts
-    line: '127.0.0.1    imap.{{ network.domain }}'
+# - name: Ensure the imap server FQDN resolves to localhost
+#   tags: dovecot
+#   lineinfile:
+#     path: /etc/hosts
+#     line: '127.0.0.1    imap.{{ network.domain }}'
 
 # Activate SSL on the imap server
 - name: Activate SSL configuration
   tags: ssl, config
   notify: Restart dovecot
   template:
-    src: 'conf.d/{{ file }}'
-    dest: '/etc/dovecot/conf.d/{{ file }}'
-  with_items:
-    - 10-ssl.conf
-  loop_control:
-    loop_var: file
-
-- name: Create dovecot global configuration files
-  tags: config
-  notify: Restart dovecot
-  template:
-    src: '{{ item }}'
-    dest: '/etc/dovecot/{{ item }}'
-    mode: 0600
+    src: 'conf.d/{{ item }}'
+    dest: '/etc/dovecot/conf.d/{{ item }}'
   loop:
-    - dovecot-ldap.conf.ext
+    - 10-ssl.conf
+
+# - name: Create dovecot global configuration files
+#   tags: config
+#   notify: Restart dovecot
+#   template:
+#     src: '{{ item }}'
+#     dest: '/etc/dovecot/{{ item }}'
+#     mode: 0600
+#   loop:
+#     - dovecot-ldap.conf.ext
 
 - name: Create the initial list of mail_plugins
   tags: config
@@ -101,21 +120,23 @@
   tags: config
   notify: Restart dovecot
   template:
-    src: 'conf.d/{{ item }}'
-    dest: '/etc/dovecot/conf.d/{{ item }}'
+    src: '{{ item }}.j2'
+    dest: '/etc/dovecot/{{ item }}'
   loop:
-    - 10-auth.conf
-    - 10-master.conf
-    - 10-mail.conf
-    - 10-logging.conf
-    - 15-lda.conf
-    - 15-mailboxes.conf
-    - 20-managesieve.conf
-    - 20-imap.conf
-    - 20-lmtp.conf
-    - 90-sieve.conf
-    - 90-plugin.conf
-    - 90-quota.conf
+    - conf.d/10-auth.conf
+    - conf.d/10-master.conf
+    - conf.d/10-mail.conf
+    - conf.d/10-logging.conf
+    - conf.d/15-lda.conf
+    - conf.d/15-mailboxes.conf
+    - conf.d/20-managesieve.conf
+    - conf.d/20-imap.conf
+    - conf.d/20-lmtp.conf
+    - conf.d/90-sieve.conf
+    - conf.d/90-plugin.conf
+    - conf.d/90-quota.conf
+    - dovecot.conf
+    - dovecot-sql.conf.ext
 
 - name: Create the global sieve directory
   tags: sieve
@@ -139,14 +160,12 @@
   tags: sieve
   notify: Restart dovecot
   template:
-    src: 'sieve/{{ file }}'
-    dest: '/etc/dovecot/sieve/{{ file }}'
+    src: 'sieve/{{ item }}'
+    dest: '/etc/dovecot/sieve/{{ item }}'
     mode: '0755'
-  with_items:
+  loop:
     - learn-spam.sh
     - learn-ham.sh
-  loop_control:
-    loop_var: file
 
 - name: Configure the firewall for default access
   tags: security
@@ -171,71 +190,71 @@
     loop_var: rule
 
 # Dovecot impersonate feature =================================================
-- name: Initialise the master user password parameters
-  when: mail.impersonate.active
-  tags: impersonate
-  set_fact:
-    master_password_params: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/master.pwd {{ policies.system.password }}'
+# - name: Initialise the master user password parameters
+#   when: mail.impersonate.active
+#   tags: impersonate
+#   set_fact:
+#     master_password_params: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/master.pwd {{ policies.system.password }}'
 
-- name: Create the master user account password
-  when: mail.impersonate.active
-  tags: impersonate
-  set_fact:
-    master_password: '{{ lookup("password", master_password_params) }}'
+# - name: Create the master user account password
+#   when: mail.impersonate.active
+#   tags: impersonate
+#   set_fact:
+#     master_password: '{{ lookup("password", master_password_params) }}'
 
-- name: Store the master user account password
-  when: mail.impersonate.active
-  tags: impersonate
-  htpasswd:
-    path: /etc/dovecot/master-users
-    name: '{{ mail.impersonate.master }}'
-    password: '{{ master_password }}'
-    owner: dovecot
-    group: dovecot
-    mode: '0400'
-    crypt_scheme: ldap_sha1
+# - name: Store the master user account password
+#   when: mail.impersonate.active
+#   tags: impersonate
+#   htpasswd:
+#     path: /etc/dovecot/master-users
+#     name: '{{ mail.impersonate.master }}'
+#     password: '{{ master_password }}'
+#     owner: dovecot
+#     group: dovecot
+#     mode: '0400'
+#     crypt_scheme: ldap_sha1
 
 # Import emails from other accounts ===========================================
 
 # This user account will impersonate each user, to store their emails after migration
 # from other accounts
-- name: Initialise the import user password parameters
-  when: mail.import.active
-  tags: impersonate
-  set_fact:
-    import_password_params: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/import.pwd {{ policies.system.password }}'
+# - name: Initialise the import user password parameters
+#   when: mail.import.active
+#   tags: impersonate
+#   set_fact:
+#     import_password_params: '{{ playbook_dir }}/../../backup/{{ network.domain }}/ldap/import.pwd {{ policies.system.password }}'
 
-- name: Create the import user account password
-  when: mail.import.active
-  tags: impersonate
-  set_fact:
-    import_password: '{{ lookup("password", import_password_params) }}'
+# - name: Create the import user account password
+#   when: mail.import.active
+#   tags: impersonate
+#   set_fact:
+#     import_password: '{{ lookup("password", import_password_params) }}'
 
-- name: Create the import email master user account
-  when: mail.import.active
-  tags: impersonate
-  htpasswd:
-    path: /etc/dovecot/master-users
-    name: '{{ mail.import.username }}'
-    password: '{{ import_password }}'
-    owner: dovecot
-    group: dovecot
-    mode: '0400'
-    crypt_scheme: ldap_sha1
+# - name: Create the import email master user account
+#   when: mail.import.active
+#   tags: impersonate
+#   htpasswd:
+#     path: /etc/dovecot/master-users
+#     name: '{{ mail.import.username }}'
+#     password: '{{ import_password }}'
+#     owner: dovecot
+#     group: dovecot
+#     mode: '0400'
+#     crypt_scheme: ldap_sha1
 
-- name: Create the post-login script directory
-  file:
-    path: /etc/dovecot/login-scripts
-    state: directory
+# - name: Create the post-login script directory
+#   file:
+#     path: /etc/dovecot/login-scripts
+#     state: directory
 
-- name: Copy the default postlogin script
-  tags: scripts
-  copy:
-    src: dovecot-postlogin
-    dest: /usr/local/sbin/dovecot-postlogin
-    mode: '0755'
-    owner: root
-    group: root
+# - name: Copy the default postlogin script
+#   tags: scripts
+#   copy:
+#     src: dovecot-postlogin
+#     dest: /usr/local/sbin/dovecot-postlogin
+#     mode: '0755'
+#     owner: root
+#     group: root
 
 # Backup handling
 - name: Add some patterns to exclude in the backups
@@ -360,13 +379,10 @@
   when: mail.fts.active
   tags: config
   template:
-    src: '{{ file.src }}'
-    dest: '{{ file.dest }}'
-  with_items:
-    - src: fts/mime-supported.conf
-      dest: /etc/dovecot/fts-mime-types.conf
-  loop_control:
-    loop_var: file
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  loop:
+    - {src: fts/mime-supported.conf, dest: /etc/dovecot/fts-mime-types.conf}
 
 - name: Copy solr configuration files
   when: mail.fts.active
@@ -383,10 +399,10 @@
 
 # Virtual mailboxes creation ==================================================
 
-- name: Include virtual mailboxes tasks
-  tags: virtual
-  when: mail.virtual_folders.active
-  include_tasks: roles/dovecot/tasks/virtual.yml
+# - name: Include virtual mailboxes tasks
+#   tags: virtual
+#   when: mail.virtual_folders.active
+#   include_tasks: roles/dovecot/tasks/virtual.yml
 
 # AppArmor configuration ======================================================
 - name: Install dovecot indexer AppArmor profile
@@ -432,9 +448,9 @@
     loop_var: section
 
 # Create entries for the DNS server ===========================================
-- name: Generate DNS records for bind
-  tags: bind
-  when: bind.install
-  template:
-    src: 40-dovecot.bind
-    dest: /etc/homebox/dns-entries.d/40-dovecot.bind
+# - name: Generate DNS records for bind
+#   tags: bind
+#   when: bind.install
+#   template:
+#     src: 40-dovecot.bind
+#     dest: /etc/homebox/dns-entries.d/40-dovecot.bind

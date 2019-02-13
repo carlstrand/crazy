@@ -10,7 +10,7 @@
     - postfix
     - postfix-cdb
     - postfix-pcre
-    - postfix-ldap
+    - postfix-pgsql
     - sasl2-bin
     - postfix-policyd-spf-python
 
@@ -21,17 +21,15 @@
   tags: postfix,ssl
   notify: Restart postfix
   acl:
-    path: '{{ path }}'
+    path: '{{ item }}'
     entity: postfix
     etype: user
     permissions: rx
     state: present
-  with_items:
+  loop:
     - /etc/letsencrypt
     - /etc/letsencrypt/archive
     - /etc/letsencrypt/live
-  loop_control:
-    loop_var: path
 
 #                                                                              #
 # End of TLS / SSL Configuration ###############################################
@@ -69,7 +67,9 @@
   with_items:
     - master.cf
     - main.cf
-    - ldap-aliases.cf
+    - virtual-alias-maps.cf
+    - virtual-mailbox-domains.cf
+    - virtual-mailbox-maps.cf
     - senders-bcc.cf
   loop_control:
     loop_var: file
@@ -192,9 +192,9 @@
     loop_var: section
 
 # Create entries for the DNS server ===========================================
-- name: Generate DNS records for bind
-  tags: bind
-  when: bind.install
-  template:
-    src: 30-postfix.bind
-    dest: /etc/homebox/dns-entries.d/30-postfix.bind
+# - name: Generate DNS records for bind
+#   tags: bind
+#   when: bind.install
+#   template:
+#     src: 30-postfix.bind
+#     dest: /etc/homebox/dns-entries.d/30-postfix.bind

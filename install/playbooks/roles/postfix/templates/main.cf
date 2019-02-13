@@ -52,10 +52,15 @@ smtpd_sasl_security_options = noanonymous
 myhostname = {{ network.hostname }}
 
 # Use virtual aliases, mailboxes, domains and transport
-virtual_alias_maps = ldap:/etc/postfix/ldap-aliases.cf
-virtual_mailbox_maps = ldap:/etc/postfix/ldap-aliases.cf
-virtual_mailbox_domains = {{ network.domain }}
+# virtual_alias_maps = ldap:/etc/postfix/ldap-aliases.cf
+# virtual_mailbox_maps = ldap:/etc/postfix/ldap-aliases.cf
+# virtual_mailbox_domains = {{ network.domain }}
+# virtual_transport = lmtp:unix:private/dovecot-lmtp
+
 virtual_transport = lmtp:unix:private/dovecot-lmtp
+virtual_mailbox_domains = mysql:/etc/postfix/virtual-mailbox-domains.cf
+virtual_mailbox_maps = mysql:/etc/postfix/virtual-mailbox-maps.cf
+virtual_alias_maps = mysql:/etc/postfix/virtual-alias-maps.cf
 
 # Specifies the domain that appears in mail that is posted on this machine
 myorigin = {{ network.domain }}

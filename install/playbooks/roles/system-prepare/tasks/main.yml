@@ -31,6 +31,9 @@
         'acl',
         'certbot',
         'git',
+        'libsasl2-modules',
+        'postgresql',
+        'libpam-pgsql'
       ]
     state: present
 

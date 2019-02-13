@@ -1,0 +1,7 @@
+# Install and configure postfix
+- hosts: homebox
+  become: yes
+  vars_files:
+    - roles/postgresql/vars.yml
+  roles:
+    - postgresql

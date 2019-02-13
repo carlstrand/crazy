@@ -12,12 +12,12 @@ sieve:
 dovecot:
   packages:
     - dovecot-core
+    - dovecot-pgsql
     - dovecot-imapd
     - dovecot-lmtpd
     - dovecot-pop3d
     - dovecot-managesieved
     - dovecot-sieve
-    - dovecot-ldap
   settings:
     mail_max_userip_connections: 64
     lda_mailbox_autocreate: no

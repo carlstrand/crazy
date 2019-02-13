@@ -6,7 +6,6 @@
 - import_playbook: load-defaults.yml
 
 # Start to create users and home directories
-#- import_playbook: ldap.yml
 - import_playbook: homes.yml
 
 # Configure SSH for remote access using borgbackup,

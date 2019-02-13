@@ -20,5 +20,5 @@ backup/*
 
 
 
-instal/playbooks/roles/.*
-instal/playbooks/.*
+install/playbooks/roles/.*
+install/playbooks/.*
