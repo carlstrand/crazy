@@ -39,17 +39,15 @@
   tags: dovecot,ssl
   notify: Restart dovecot
   acl:
-    path: '{{ path }}'
+    path: '{{ item }}'
     entity: dovecot
     etype: user
     permissions: rx
     state: present
-  with_items:
+  loop:
     - /etc/letsencrypt
     - /etc/letsencrypt/archive
     - /etc/letsencrypt/live
-  loop_control:
-    loop_var: path
 
 #                                                                              #
 # End of TLS / SSL Configuration ###############################################
@@ -76,13 +74,11 @@
   tags: config
   notify: Restart dovecot
   template:
-    src: '{{ file }}'
-    dest: '/etc/dovecot/{{ file }}'
+    src: '{{ item }}'
+    dest: '/etc/dovecot/{{ item }}'
     mode: 0600
-  with_items:
+  loop:
     - dovecot-ldap.conf.ext
-  loop_control:
-    loop_var: file
 
 - name: Create the initial list of mail_plugins
   tags: config
@@ -105,9 +101,9 @@
   tags: config
   notify: Restart dovecot
   template:
-    src: 'conf.d/{{ file }}'
-    dest: '/etc/dovecot/conf.d/{{ file }}'
-  with_items:
+    src: 'conf.d/{{ item }}'
+    dest: '/etc/dovecot/conf.d/{{ item }}'
+  loop:
     - 10-auth.conf
     - 10-master.conf
     - 10-mail.conf
@@ -120,8 +116,6 @@
     - 90-sieve.conf
     - 90-plugin.conf
     - 90-quota.conf
-  loop_control:
-    loop_var: file
 
 - name: Create the global sieve directory
   tags: sieve

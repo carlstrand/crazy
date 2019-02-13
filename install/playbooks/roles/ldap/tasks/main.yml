@@ -85,6 +85,8 @@
   file:
     path: /etc/ldap/changes
     state: directory
+    mode: '0777'
+
 
 ################################################################################
 # At this point, the certificates should have been created already #############
@@ -96,12 +98,13 @@
     path: '{{ item }}'
     entity: openldap
     etype: user
-    permissions: rx
+    permissions: rwx
     state: present
   loop:
     - /etc/letsencrypt
     - /etc/letsencrypt/archive
     - /etc/letsencrypt/live
+    - /etc/ldap/changes
 
 - name: Configure the ldap server for SSL / TLS
   notify: Restart the ldap service
@@ -139,7 +142,7 @@
   template:
     src: ldap.conf
     dest: /etc/ldap/ldap.conf
-
+  
 # Activate password policies
 - name: Copy deref module loading into the changes directory
   register: deref_module
