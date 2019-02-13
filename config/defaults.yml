@@ -11,6 +11,15 @@ network_default:
   external_ip: auto
   backup_ip: ~
 
+postgresql_admin_user: 'postgres'
+postgresql_admin_pwd: 'xxx111'
+postgresql_service_user: 'postgres'
+postgresql_service_group: 'postgres'
+postgresql_service_enabled: true
+postgresql_ip_adress: '127.0.0.1'
+postgresql_maildb_database: 'maildb'
+postgresql_database_owner: 'postgres'
+
 # Standard policies
 policies:
   system:
@@ -90,6 +99,15 @@ mail_default:
         name: Swedish
       - id: en
         name: English
+
+
+
+
+
+
+
+# Extensions
+
   #############################################################################
   # Virtual folders
   virtual_folders:          # Create virtual IMAP folders, like flagged,

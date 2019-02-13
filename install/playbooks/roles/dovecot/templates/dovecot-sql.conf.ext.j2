@@ -70,7 +70,9 @@ driver = pgsql
 #   connect = /etc/dovecot/authdb.sqlite
 #
 #connect =
-connect = host=127.0.0.1 dbname=mailserver user=mailserver password={{ mysql_password }}
+#connect = host=127.0.0.1 dbname=mailserver user=mailserver password={{ mysql_password }}
+
+connect = host={{ postgresql_ip_adress }} dbname={{ postgresql_maildb_database }} user={{ postgresql_admin_user }} password={{ postgresql_admin_pwd }}
 
 # Default password scheme.
 #

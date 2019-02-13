@@ -62,26 +62,16 @@
   tags: config
   notify: Restart postfix
   template:
-    src: '{{ file }}'
+    src: '{{ file }}.j2'
     dest: '/etc/postfix/{{ file }}'
-  with_items:
+  loop:
     - master.cf
     - main.cf
-    - virtual-alias-maps.cf
-    - virtual-mailbox-domains.cf
-    - virtual-mailbox-maps.cf
+    - pgsql-virtual-alias-maps.cf
+    - pgsql-virtual-mailbox-domains.cf
+    - pgsql-virtual-mailbox-maps.cf
     - senders-bcc.cf
-  loop_control:
-    loop_var: file
 
-- name: Refresh the senders bcc map
-  tags: postfix
-  notify: Restart postfix
-  command: 'postmap /etc/postfix/{{ file }}'
-  with_items:
-    - senders-bcc.cf
-  loop_control:
-    loop_var: file
 
 - name: Configure the firewall for default access
   tags: postfix,security

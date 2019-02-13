@@ -1,0 +1,5 @@
+user = {{ postgresql_admin_user }}
+password = {{ postgresql_admin_pwd }}
+hosts = {{ postgresql_ip_adress }}
+dbname = {{ postgresql_maildb_database }}
+query = SELECT 1 FROM virtual_domains WHERE name='%s'
