@@ -62,8 +62,8 @@
   tags: config
   notify: Restart postfix
   template:
-    src: '{{ file }}.j2'
-    dest: '/etc/postfix/{{ file }}'
+    src: '{{ item }}.j2'
+    dest: '/etc/postfix/{{ item }}'
   loop:
     - master.cf
     - main.cf
