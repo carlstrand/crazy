@@ -144,7 +144,7 @@
 - name: Install ufw / fail2ban and automatic security updates
   tags: apt, security
   apt:
-    name: ['unattended-upgrades', 'ufw', 'fail2ban', 'rblcheck', 'locales']
+    name: ['unattended-upgrades', 'ufw', 'fail2ban', 'rblcheck']
     state: present
 
 - name: Install AppArmor packages
@@ -230,24 +230,24 @@
   loop_control:
     loop_var: dict
 
-- name: Create a composition directory for bind
-  when: bind.install
-  tags: bind
-  file:
-    path: /etc/homebox/dns-entries.d/
-    state: directory
+# - name: Create a composition directory for bind
+#   when: bind.install
+#   tags: bind
+#   file:
+#     path: /etc/homebox/dns-entries.d/
+#     state: directory
 
 # SSHFP (fingerprints) are only active with DNSSEC
-- name: Create the SSHFP records for bind
-  when: bind.install and bind.dnssec.active
-  tags: bind
-  register: ssh_keygen
-  shell: >-
-    ssh-keygen -r {{ network.domain }} | sed 's/ /. /'
+# - name: Create the SSHFP records for bind
+#   when: bind.install and bind.dnssec.active
+#   tags: bind
+#   register: ssh_keygen
+#   shell: >-
+#     ssh-keygen -r {{ network.domain }} | sed 's/ /. /'
 
-- name: Add the SSHFP records
-  when: bind.install and bind.dnssec.active
-  tags: bind
-  template:
-    src: sshfp.bind
-    dest: /etc/homebox/dns-entries.d/01-sshfp.bind
+# - name: Add the SSHFP records
+#   when: bind.install and bind.dnssec.active
+#   tags: bind
+#   template:
+#     src: sshfp.bind
+#     dest: /etc/homebox/dns-entries.d/01-sshfp.bind

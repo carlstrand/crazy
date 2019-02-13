@@ -78,18 +78,18 @@ for fqdn in $RENEWED_DOMAINS; do
             systemctl restart rspamd
             ;;
 
-        # Jabber server
-        xmpp|conference)
-	    # Exit if jabber server is not running
-	    systemctl status ejabberd >/dev/null 2>&1 || continue
-	    echo "Reloading XMPP ejabberd server"
-	    cd /etc/letsencrypt/live/$domain
-	    /bin/cat privkey.pem fullchain.pem > /etc/ejabberd/default.pem
-	    chown ejabberd:root /etc/ejabberd/default.pem
-	    chmod 640 /etc/ejabberd/default.pem
-            systemctl restart ejabberd
-            systemctl restart nginx
-            ;;
+        # # Jabber server
+        # xmpp|conference)
+	    # # Exit if jabber server is not running
+	    # systemctl status ejabberd >/dev/null 2>&1 || continue
+	    # echo "Reloading XMPP ejabberd server"
+	    # cd /etc/letsencrypt/live/$domain
+	    # /bin/cat privkey.pem fullchain.pem > /etc/ejabberd/default.pem
+	    # chown ejabberd:root /etc/ejabberd/default.pem
+	    # chmod 640 /etc/ejabberd/default.pem
+        #     systemctl restart ejabberd
+        #     systemctl restart nginx
+        #     ;;
 
     esac
 done

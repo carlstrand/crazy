@@ -36,8 +36,8 @@
 # Except when in development mode.
 # It can alter the tests and is CPU intensive if you have
 # defined a lot of accounts.
-- import_playbook: import-accounts.yml
-  when: mail.import.active and not system.devel
+# - import_playbook: import-accounts.yml
+#   when: mail.import.active and not system.devel
 
 # Clean up the system before going live
 - import_playbook: system-cleanup.yml

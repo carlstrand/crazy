@@ -8,7 +8,6 @@ defaults:
     - ufw
     - fail2ban
     - rblcheck
-    - locales
 
 ###############################################################################
 # Dictionaries to install in the system
